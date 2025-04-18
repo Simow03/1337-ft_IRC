@@ -24,12 +24,18 @@ bool is_valid_port(std::string portStr) {
 int main(int ac, char **av) {
 
 	if (ac != 3) {
-		std::cerr << "Error : invalid input\nUsage : ./ircserv <port> <password>" << std::endl;
+		std::cerr << RED <<  BOLD << UNDERLINE << "\nError :"
+				<< RESET <<" invalid input\n"
+				<< RED <<  BOLD << UNDERLINE << "\nUsage :"
+				<< RESET << "./ircserv <port> <password>\n" << std::endl;
 		return 1;
 	}
  
 	if (!is_valid_port(av[1])) {
-		std::cerr << "Error : invalid port number" << std::endl;
+		std::cerr << RED <<  BOLD << UNDERLINE << "\nError :"
+				<< RESET <<" invalid port\n"
+				<< RED <<  BOLD << UNDERLINE << "\nUsage :"
+				<< RESET << " Port should be between 1024 - 49151\n" << std::endl;
 		return 1;
 	}
 
@@ -42,12 +48,12 @@ int main(int ac, char **av) {
 	std::string password = av[2];
 
 	if (password.empty()) {
-		std::cerr << "Error : invalid password" << std::endl;
+		std::cerr << RED <<  BOLD << UNDERLINE << "\nError :"
+				<< RESET <<" invalid password\n"
+				<< RED <<  BOLD << UNDERLINE << "\nUsage :"
+				<< RESET << " Password should not be empty.\n" << std::endl;
 		return 1;
 	}
-
-	std::cout << "port input : " << port << std::endl;
-	std::cout << "password input : " << password << std::endl;
 
 	Server server(port, password);
 
