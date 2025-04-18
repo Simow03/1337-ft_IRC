@@ -57,5 +57,7 @@ int main(int ac, char **av) {
 
 	Server server(port, password);
 
+	server.runServer();
+
 	return 0;
 }
