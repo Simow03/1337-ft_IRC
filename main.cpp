@@ -1,5 +1,13 @@
 #include "Server.hpp"
 
+bool g_running = true;
+
+void signalHandler(int signum) {
+	if (signum) {
+		g_running = false;
+	}
+}
+
 bool is_valid_port(std::string portStr) {
 
 	if (portStr.empty())
@@ -55,9 +63,15 @@ int main(int ac, char **av) {
 		return 1;
 	}
 
+	signal(SIGINT, signalHandler);
+	signal(SIGTERM, signalHandler);
+
 	Server server(port, password);
 
 	server.runServer();
+
+	std::cout << YELLOW << BOLD << "\n\t      Server has exited !      \n"
+				  << RESET << std::endl;
 
 	return 0;
 }

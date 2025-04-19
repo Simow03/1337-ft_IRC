@@ -12,9 +12,11 @@
 # include <vector>
 # include <cstring>
 # include <cerrno>
+# include <signal.h>
 
 # define BACKLOG 1024
 # define BUFFER_SIZE 1024
+extern bool g_running;
 
 # define RED "\033[31m"
 # define BOLD "\033[1m"
@@ -29,7 +31,7 @@ class Server
 {
 private:
 	int port;
-	bool isRunning;
+	// bool isRunning;
 	std::string password;
 	struct sockaddr_in sa;
 	struct sockaddr_in ca;

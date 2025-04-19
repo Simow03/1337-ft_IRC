@@ -8,12 +8,11 @@ Server::Server(int _port, std::string &_password) : port(_port), password(_passw
 		if (sockfd < 0)
 			throw std::runtime_error("socket() : system call error.");
 
-		int flag = fcntl(sockfd, F_GETFL, 0);
-		fcntl(sockfd, F_SETFL, flag | O_NONBLOCK);
+		fcntl(sockfd, F_SETFL, O_NONBLOCK);
 
 		int opt = 1;
-    if (setsockopt(sockfd, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt)) < 0)
-    	throw std::runtime_error("setsockopt() : system call error.");
+    	if (setsockopt(sockfd, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt)) < 0)
+    		throw std::runtime_error("setsockopt() : system call error.");
 
 		sa.sin_family = AF_INET;
 		sa.sin_addr.s_addr = INADDR_ANY;
@@ -38,7 +37,6 @@ Server::Server(int _port, std::string &_password) : port(_port), password(_passw
 		std::cout << YELLOW << BOLD << "\n\t. . . Waiting for connections . . .\n"
 				  << RESET << std::endl;
 
-		isRunning = true;
 	}
 	catch (const std::exception &e)
 	{
@@ -50,7 +48,7 @@ void Server::runServer() {
 
 	try
 	{
-		while (isRunning)
+		while (g_running)
 		{
 			pollStatus = poll(&clientfds[0], clientfds.size(), 100);
 			if (pollStatus < 0)
@@ -62,6 +60,12 @@ void Server::runServer() {
 					close(sockfd);
 	
 				clientfds.clear();
+
+				if (!g_running) {
+					std::cout << "\nSIGNIT RECEIVED ; QUIT SERVER" << std::endl;
+					return ;
+				}
+
 				throw std::runtime_error("poll() : system call error.");
 			}
 			if(pollStatus == 0)
@@ -137,7 +141,7 @@ bool Server::receiveClientData(size_t i) {
 
 	std::string command(buffer);
 
-	std::cout << CYAN << "\nclient " << fd << ": " << command << RESET << std::endl;
+	std::cout << CYAN << "\nclient " << fd << ": " << RESET << command << std::endl;
 
 	// need to process the type of command received
 	return true;
@@ -146,7 +150,7 @@ bool Server::receiveClientData(size_t i) {
 void Server::disconnectClient(size_t i) {
 	int fd = clientfds[i].fd;
 
-	std::cout << RED << BOLD << "\nclient " << clientfd << " disconnected!\n" << RESET << std::endl;
+	std::cout << RED << BOLD << "\nclient " << fd << " disconnected!\n" << RESET << std::endl;
 
 	close(fd);
 
