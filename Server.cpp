@@ -111,8 +111,7 @@ void Server::acceptNewConnection() {
 			throw std::runtime_error("accept() : system call error.");
 		}
 
-		int flag = fcntl(clientfd, F_GETFL, 0);
-		fcntl(clientfd, F_SETFL, flag | O_NONBLOCK);
+		fcntl(clientfd, F_SETFL, O_NONBLOCK);
 
 		pollfds.fd = clientfd;
 		pollfds.events = POLLIN;

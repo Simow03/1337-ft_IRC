@@ -14,6 +14,8 @@
 # include <cerrno>
 # include <signal.h>
 
+#include "Client.hpp"
+
 # define BACKLOG 1024
 # define BUFFER_SIZE 1024
 extern bool g_running;
@@ -31,13 +33,13 @@ class Server
 {
 private:
 	int port;
-	// bool isRunning;
 	std::string password;
 	struct sockaddr_in sa;
 	struct sockaddr_in ca;
 	socklen_t ca_len;
 	struct pollfd pollfds;
 	std::vector<struct pollfd> clientfds;
+	std::vector<Client *> clients;
 	int sockfd;
 	int clientfd;
 	int pollStatus;
