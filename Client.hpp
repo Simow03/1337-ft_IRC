@@ -24,7 +24,7 @@ public:
 	bool getHasPass(void) const;
 	bool getIsOP(void) const;
 
-	void sendMessage(std::string &message) const;
+	void sendMessage(std::string message) const;
 };
 
 

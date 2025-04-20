@@ -55,10 +55,10 @@ void Server::runServer() {
 			{
 				for (size_t i = 0; i < clientfds.size(); i++)
 					close(clientfds[i].fd);
-	
+
 				if (sockfd > 0)
 					close(sockfd);
-	
+
 				clientfds.clear();
 
 				if (!g_running) {
@@ -116,13 +116,13 @@ void Server::acceptNewConnection() {
 		pollfds.fd = clientfd;
 		pollfds.events = POLLIN;
 		clientfds.push_back(pollfds);
-		
+
 		std::cout << GREEN << BOLD << "\nclient " << clientfd << " connected successfuly!\n" << RESET << std::endl;
 
 		send(clientfd, GREEN BOLD "\nWelcome to the server!\n\n" RESET, 39, 0);
 
 	} while (clientfd != -1);
-	
+
 }
 
 bool Server::receiveClientData(size_t i) {
@@ -135,7 +135,7 @@ bool Server::receiveClientData(size_t i) {
 
 	if (received < 0)
 		return false;
-	
+
 	buffer[received] = '\0';
 
 	std::string command(buffer);
@@ -143,6 +143,16 @@ bool Server::receiveClientData(size_t i) {
 	std::cout << CYAN << "\nclient " << fd << ": " << RESET << command << std::endl;
 
 	// need to process the type of command received
+	// Client* client = get_client(fd);
+	Client *client = NULL;
+	for(size_t i = 0; i < clients.size();i++)
+	{
+		if(clients[i].getFd() == fd)
+		{
+			client = &clients[i];
+		}
+	}
+	parse handl(buffer,this, client);
 	return true;
 }
 
@@ -160,9 +170,9 @@ Server::~Server() {
 
 	for (size_t i = 0; i < clientfds.size(); i++)
 		close(clientfds[i].fd);
-	
+
 	if (sockfd > 0)
 		close(sockfd);
-	
+
 	clientfds.clear();
 };
