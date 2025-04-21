@@ -11,9 +11,7 @@ int parse::cmd_lenght(std::string str)
 
 void parse::execute_join(std::string arg, Server *server, Client *client)
 {
-    // remove new line
-    if(arg[arg.length() - 1] == '\n')
-        arg = arg.substr(0, arg.length() - 1);
+    // std::cout << client->getFd() << std::endl;
     std::string ch;
     std::string key;
     int i = 0;
@@ -39,12 +37,17 @@ void parse::execute_join(std::string arg, Server *server, Client *client)
     {
         keys.push_back(token);
     }
+    if(channels.empty())
+    {
+        std::cout << "ERR_NEEDMOREPARAMS" << std::endl;
+        return;
+    }
     int j = 0;
     while (j < channels.size())
     {
         if (channels[j][0] != '#' && channels[j][0] != '&')
         {
-            client->sendMessage("ERR_NOSUCHCHANNEL\n");
+            // client->sendMessage("ERR_NOSUCHCHANNEL\n");
             std::cout << "ERR_NOSUCHCHANNEL" << std::endl;
         }
         else
@@ -53,29 +56,42 @@ void parse::execute_join(std::string arg, Server *server, Client *client)
             {
                 if (server->client_exist(channels[j], client))
                 {
+
                     std::cout << "Client already in channel" << std::endl;
-                    client->sendMessage("ERR_USERONCHANNEL\n");
+                    // client->sendMessage("ERR_USERONCHANNEL\n");
                 }
                 else
                 {
                    std :: cout << "add client to channel" << std::endl;
-                   if (server->channel_has_key(channels[j]))
+                   if(server->channel_need_inv(channels[i]) && server->is_invitd(channels[j],client))
                    {
-                        std::string k = server->get_channel_key(channels[j]);
-                        if (j >= keys.size() || keys[j] != k)
-                        {
-                            client->sendMessage("ERR_BADCHANNELKEY\n");
-                            std::cout << "ERR_BADCHANNELKEY" << std::endl;
-                        }
-                        else
-                        {
-                            server->add_client_to_channel(channels[j], client);
-                            std::cout << "Client added to channel" << std::endl;
-                        }
+                        std::cout << "Client not invited" << std::endl;
+                   }
+                   else if(server->channel_need_inv(channels[i]) && !server->is_invitd(channels[j],client))
+                   {
+                        std::cout << "Client is invited" << std::endl;
+                        server->add_client_to_channel(channels[j], client);
                    }
                    else
                    {
-                        server->add_client_to_channel(channels[j], client);
+                        if (server->channel_has_key(channels[j]))
+                        {
+                             std::string k = server->get_channel_key(channels[j]);
+                             if (j >= keys.size() || keys[j] != k)
+                             {
+                                 // client->sendMessage("ERR_BADCHANNELKEY\n");
+                                 std::cout << "ERR_BADCHANNELKEY" << std::endl;
+                             }
+                             else
+                             {
+                                 server->add_client_to_channel(channels[j], client);
+                                 std::cout << "Client added to channel" << std::endl;
+                             }
+                        }
+                        else
+                        {
+                             server->add_client_to_channel(channels[j], client);
+                        }
                    }
                 }
             }

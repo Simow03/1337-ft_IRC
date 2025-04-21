@@ -6,6 +6,7 @@
 # include <sys/types.h>
 # include <sys/socket.h>
 # include <netinet/in.h>
+# include <arpa/inet.h>
 # include <poll.h>
 # include <fcntl.h>
 # include <unistd.h>
@@ -139,6 +140,34 @@ public:
 				channels[i].remove_client(client);
 			}
 		}
+	}
+		int channel_need_inv(std::string channel_name)
+	{
+		for(size_t i = 0; i < channels.size();i++)
+		{
+			if(channels[i].GetName() == channel_name)
+			{
+				if(channels[i].is_invited == 1)
+					return 1;
+				else
+					return 0;
+			}
+		}
+		return 0;
+	}
+	int is_invitd(std::string channel_name, Client *client)
+	{
+		for(size_t i = 0; i < channels.size();i++)
+		{
+			if(channels[i].GetName() == channel_name)
+			{
+				if(channels[i].if_invited(client))
+					return 1;
+				else
+					return 0;
+			}
+		}
+		return 0;
 	}
 };
 
