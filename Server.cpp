@@ -117,9 +117,20 @@ void Server::acceptNewConnection() {
 		pollfds.events = POLLIN;
 		clientfds.push_back(pollfds);
 
+		//temporary username & nickname before authentication
+		std::string username = "client " + std::to_string(clientfd);
+		std::string nickname = "cl_" + std::to_string(clientfd);
+
+		std::string ipStr = inet_ntoa(ca.sin_addr);
+
+		Client client(clientfd, ipStr, nickname, username, false);
+
+		clients.push_back(client);
+
 		std::cout << GREEN << BOLD << "\nclient " << clientfd << " connected successfuly!\n" << RESET << std::endl;
 
 		send(clientfd, GREEN BOLD "\nWelcome to the server!\n\n" RESET, 39, 0);
+
 
 	} while (clientfd != -1);
 
