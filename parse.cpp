@@ -8,7 +8,6 @@ int parse::cmd_lenght(std::string str)
         i++;
     return i;
 }
-
 void parse::execute_join(std::string arg, Server *server, Client *client)
 {
     // std::cout << client->getFd() << std::endl;
