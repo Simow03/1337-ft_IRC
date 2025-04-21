@@ -75,7 +75,6 @@ public:
 	{
 		for(size_t i = 0; i < channels.size();i++)
 		{
-			std::cout << "channel name: " << channel_name <<"?" << std::endl;
 			if(channels[i].GetName() == channel_name)
 				return 1;
 		}

@@ -163,6 +163,7 @@ bool Server::receiveClientData(size_t i) {
 			client = &clients[i];
 		}
 	}
+	buffer[received - 1] = '\0';
 	parse handl(buffer,this, client);
 	return true;
 }
