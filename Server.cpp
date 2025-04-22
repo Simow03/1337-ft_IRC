@@ -11,8 +11,8 @@ Server::Server(int _port, std::string &_password) : port(_port), password(_passw
 		fcntl(sockfd, F_SETFL, O_NONBLOCK);
 
 		int opt = 1;
-    	if (setsockopt(sockfd, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt)) < 0)
-    		throw std::runtime_error("setsockopt() : system call error.");
+		if (setsockopt(sockfd, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt)) < 0)
+			throw std::runtime_error("setsockopt() : system call error.");
 
 		sa.sin_family = AF_INET;
 		sa.sin_addr.s_addr = INADDR_ANY;
@@ -36,7 +36,6 @@ Server::Server(int _port, std::string &_password) : port(_port), password(_passw
 
 		std::cout << YELLOW << BOLD << "\n\t. . . Waiting for connections . . .\n"
 				  << RESET << std::endl;
-
 	}
 	catch (const std::exception &e)
 	{
@@ -44,7 +43,8 @@ Server::Server(int _port, std::string &_password) : port(_port), password(_passw
 	}
 };
 
-void Server::runServer() {
+void Server::runServer()
+{
 
 	try
 	{
@@ -61,27 +61,29 @@ void Server::runServer() {
 
 				clientfds.clear();
 
-				if (!g_running) {
+				if (!g_running)
+				{
 					std::cout << "\nSIGNIT RECEIVED ; QUIT SERVER" << std::endl;
-					return ;
+					return;
 				}
 
 				throw std::runtime_error("poll() : system call error.");
 			}
-			if(pollStatus == 0)
-				continue ;
+			if (pollStatus == 0)
+				continue;
 			for (size_t i = 0; i < clientfds.size(); i++)
 			{
 				if (clientfds[i].revents == 0)
 					continue;
 				if (clientfds[i].fd == sockfd && (clientfds[i].revents & POLLIN))
 				{
-						acceptNewConnection();
-						continue;
+					acceptNewConnection();
+					continue;
 				}
 				if (clientfds[i].revents & POLLIN)
 				{
-					if (!receiveClientData(i)) {
+					if (!receiveClientData(i))
+					{
 						disconnectClient(i);
 						i--;
 					}
@@ -94,18 +96,21 @@ void Server::runServer() {
 			}
 		}
 	}
-	catch(const std::exception& e) {
+	catch (const std::exception &e)
+	{
 		std::cerr << e.what() << std::endl;
 	}
 }
 
-void Server::acceptNewConnection() {
+void Server::acceptNewConnection()
+{
 	do
 	{
 		ca_len = sizeof(ca);
 		clientfd = accept(sockfd, (struct sockaddr *)&ca, &ca_len);
 
-		if (clientfd < 0) {
+		if (clientfd < 0)
+		{
 			if (errno == EWOULDBLOCK || errno == EAGAIN)
 				break;
 			throw std::runtime_error("accept() : system call error.");
@@ -117,26 +122,18 @@ void Server::acceptNewConnection() {
 		pollfds.events = POLLIN;
 		clientfds.push_back(pollfds);
 
-		//temporary username & nickname before authentication
-		std::string username = "client " + std::to_string(clientfd);
-		std::string nickname = "cl_" + std::to_string(clientfd);
+		std::cout << GREEN << BOLD << "\nclient " << clientfd << " connected successfuly!\n"
+				  << RESET << std::endl;
 
-		std::string ipStr = inet_ntoa(ca.sin_addr);
+		std::string authMssg = GREEN BOLD "\n\tWelcome to the server!\n\n" RESET "Please authenticate in this format : NICKNAME USERNAME PASSWORD\n" RESET;
 
-		Client client(clientfd, ipStr, nickname, username, false);
-
-		clients.push_back(client);
-
-		std::cout << GREEN << BOLD << "\nclient " << clientfd << " connected successfuly!\n" << RESET << std::endl;
-
-		send(clientfd, GREEN BOLD "\nWelcome to the server!\n\n" RESET, 39, 0);
-
+		send(clientfd, authMssg.c_str(), authMssg.size(), 0);
 
 	} while (clientfd != -1);
-
 }
 
-bool Server::receiveClientData(size_t i) {
+bool Server::receiveClientData(size_t i)
+{
 
 	char buffer[BUFFER_SIZE];
 	memset(buffer, 0, sizeof(buffer));
@@ -151,34 +148,120 @@ bool Server::receiveClientData(size_t i) {
 
 	std::string command(buffer);
 
-	std::cout << CYAN << "\nclient " << fd << ": " << RESET << command << std::endl;
+	while (!command.empty() && command.back() == '\n')
+		command.pop_back();
 
-	// need to process the type of command received
-	// Client* client = get_client(fd);
+	bool clientFound = false;
 	Client *client = NULL;
-	for(size_t i = 0; i < clients.size();i++)
+
+	std::vector<Client>::iterator clientIt = clients.end();
+
+	for (std::vector<Client>::iterator it = clients.begin(); it != clients.end(); ++it)
 	{
-		if(clients[i].getFd() == fd)
+		if (it->getFd() == fd)
 		{
-			client = &clients[i];
+			clientFound = true;
+			clientIt = it;
+			client = &(*it);
+			break;
 		}
 	}
-	buffer[received - 1] = '\0';
-	parse handl(buffer,this, client);
+
+	if (clientFound)
+	{
+
+		std::cout << CYAN << "\nclient " << fd << ": " << RESET << command << std::endl;
+
+		parse handl(buffer, this, client);
+
+		return true;
+	}
+
+	else
+		authenticateClient(command, fd);
+
 	return true;
 }
 
-void Server::disconnectClient(size_t i) {
+void Server::disconnectClient(size_t i)
+{
 	int fd = clientfds[i].fd;
 
-	std::cout << RED << BOLD << "\nclient " << fd << " disconnected!\n" << RESET << std::endl;
+	std::cout << RED << BOLD << "\nclient " << fd << " disconnected!\n"
+			  << RESET << std::endl;
 
 	close(fd);
 
 	clientfds.erase(clientfds.begin() + i);
+
+	for (std::vector<Client>::iterator it = clients.begin(); it != clients.end(); ++it)
+	{
+		if (it->getFd() == fd)
+			clients.erase(it);
+		break;
+	}
 }
 
-Server::~Server() {
+void Server::authenticateClient(std::string &command, int fd)
+{
+
+	if (command.empty())
+	{
+		std::string errorMssg = RED BOLD "\nPlease authenticate in this format : NICKNAME USERNAME PASSWORD\n" RESET;
+		send(fd, errorMssg.c_str(), errorMssg.size(), 0);
+		return;
+	}
+
+	std::istringstream iss(command);
+	std::string nickname, username, inPass;
+
+	if (iss >> nickname >> username >> inPass)
+	{
+		bool unique = true;
+
+		for (std::vector<Client>::iterator it = clients.begin(); it != clients.end(); ++it)
+		{
+			if (it->getNickName() == nickname)
+			{
+				unique = false;
+				break;
+			}
+		}
+		if (!unique)
+		{
+			std::string errorMssg = RED BOLD "\nNickname already in use. plase try again.\n" RESET;
+			send(fd, errorMssg.c_str(), errorMssg.size(), 0);
+			return;
+		}
+		if (inPass != password)
+		{
+			std::string errorMsg = RED BOLD "\nInvalid password. Please try again.\n" RESET;
+			send(fd, errorMsg.c_str(), errorMsg.size(), 0);
+			return;
+		}
+
+		std::string ipStr = inet_ntoa(ca.sin_addr);
+
+		Client client(fd, ipStr, nickname, username, true);
+
+		clients.push_back(client);
+
+		std::string welcomeMsg = GREEN BOLD "\nAuthentication successful! Welcome, " + nickname + "!\n\n" RESET;
+		send(fd, welcomeMsg.c_str(), welcomeMsg.size(), 0);
+		std::cout << GREEN << BOLD << "\nclient " << fd << " authenticated successfuly!\n"
+				  << RESET << std::endl;
+
+		return;
+	}
+	else
+	{
+		std::string errorMsg = RED BOLD "\nInvalid format. Please use: NICKNAME USERNAME PASSWORD\n" RESET;
+		send(fd, errorMsg.c_str(), errorMsg.size(), 0);
+	}
+}
+
+Server::~Server()
+{
 
 	for (size_t i = 0; i < clientfds.size(); i++)
 		close(clientfds[i].fd);

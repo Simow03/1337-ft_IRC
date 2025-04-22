@@ -55,11 +55,11 @@ int main(int ac, char **av) {
 
 	std::string password = av[2];
 
-	if (password.empty()) {
+	if (password.empty() || password.find(' ') != std::string::npos) {
 		std::cerr << RED <<  BOLD << UNDERLINE << "\nError :"
 				<< RESET <<" invalid password\n"
 				<< RED <<  BOLD << UNDERLINE << "\nUsage :"
-				<< RESET << " Password should not be empty.\n" << std::endl;
+				<< RESET << " Password should not be empty or contains a space.\n" << std::endl;
 		return 1;
 	}
 

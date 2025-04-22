@@ -57,6 +57,7 @@ public:
 	void acceptNewConnection(void);
 	bool receiveClientData(size_t i);
 	void disconnectClient(size_t i);
+	void authenticateClient(std::string& command, int fd);
 	void add_channel(std::string name,std::string key, int i) //-> add channel
 	{
 		channel c(name,key, i);
