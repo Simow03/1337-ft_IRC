@@ -174,8 +174,12 @@ bool Server::receiveClientData(size_t i)
 
 		if (ircBot->isBotCommand(command))
 			ircBot->processCommand(command, *client, fd);
+		// remove new line from variable buffer
+		if(buffer[received - 1] == '\n')
+			buffer[received - 1] = '\0';
 
-		parse handl(buffer, this, client);
+
+		parse handl(buffer, this, *client);
 
 		return true;
 	}

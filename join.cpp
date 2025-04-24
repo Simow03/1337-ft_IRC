@@ -2,7 +2,7 @@
 
 
 
-void parse::execute_join(std::string arg, Server *server, Client *client)
+void parse::execute_join(std::string arg, Server *server, Client &client)
 {
     // std::cout << client->getFd() << std::endl;
     std::string ch;
@@ -44,7 +44,7 @@ void parse::execute_join(std::string arg, Server *server, Client *client)
     {
         if (channels[j][0] != '#' && channels[j][0] != '&')
         {
-            client->sendMessage("ERR_NOSUCHCHANNEL\n");
+            client.sendMessage("ERR_NOSUCHCHANNEL\n");
             std::cout << "ERR_NOSUCHCHANNEL" << std::endl;
         }
         else
@@ -55,7 +55,7 @@ void parse::execute_join(std::string arg, Server *server, Client *client)
 				{
 
 					std::cout << "Client already in channel" << std::endl;
-					client->sendMessage("ERR_USERONCHANNEL\n");
+					client.sendMessage("ERR_USERONCHANNEL\n");
 				}
 				else
                 {
@@ -76,14 +76,14 @@ void parse::execute_join(std::string arg, Server *server, Client *client)
                              std::string k = server->get_channel_key(channels[j]);
                              if (j >= keys.size() || keys[j] != k)
                              {
-                                 client->sendMessage("ERR_BADCHANNELKEY\n");
+                                 client.sendMessage("ERR_BADCHANNELKEY\n");
                                  std::cout << "ERR_BADCHANNELKEY" << std::endl;
                              }
                              else
                              {
                                 if(server->limit(channels[j]) == 1)
                                 {
-                                    client->sendMessage("ERR_CHANNELISFULL\n");
+                                    client.sendMessage("ERR_CHANNELISFULL\n");
                                     std::cout << "ERR_CHANNELISFULL" << std::endl;
                                     return;
                                 }
@@ -95,7 +95,7 @@ void parse::execute_join(std::string arg, Server *server, Client *client)
                         {
                             if(server->limit(channels[j]) == 1 )
                             {
-                                client->sendMessage("ERR_CHANNELISFULL\n");
+                                client.sendMessage("ERR_CHANNELISFULL\n");
                                 std::cout << "ERR_CHANNELISFULL" << std::endl;
                                 return;
                             }

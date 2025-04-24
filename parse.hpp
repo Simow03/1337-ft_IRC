@@ -24,13 +24,13 @@ class parse
         std::string arg;
         std::vector<std::string> channels;
         std::vector<std::string> keys;
-        void execute_cmd(std::string cmd, std::string arg, Server *server, Client *client);
+        void execute_cmd(std::string cmd, std::string arg, Server *server, Client &client);
         int cmd_lenght(std::string str);
-        void execute_join(std::string arg, Server *server, Client *client);
-        void execute_mode(std::string arg, Server *server, Client *client);
+        void execute_join(std::string arg, Server *server, Client &client);
+        void execute_mode(std::string arg, Server *server, Client &client);
 
     public:
-        parse(char *buff,Server *server,Client *client);
+        parse(char *buff,Server *server,Client &client);
 
 
 };

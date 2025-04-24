@@ -16,7 +16,7 @@ std::vector<std::string>	Split(std::string recvmessage)
     }
 	return(partsCmd);
 }
-void parse::execute_mode(std::string arg, Server *server, Client *client)
+void parse::execute_mode(std::string arg, Server *server, Client &client)
 {
 	std ::string channel_name;
 	std::string mode;
@@ -25,30 +25,30 @@ void parse::execute_mode(std::string arg, Server *server, Client *client)
 
 	if(arg.empty())
 	{
-		client->sendMessage("ERR_NEEDMOREPARAMS\n");
+		client.sendMessage("ERR_NEEDMOREPARAMS\n");
 		return;
 	}
 	std::vector<std::string> partsCmd = Split(arg);
 	if(partsCmd.empty() || partsCmd.size() < 2)
 	{
-		client->sendMessage("ERR_NEEDMOREPARAMS\n");
+		client.sendMessage("ERR_NEEDMOREPARAMS\n");
 		return;
 	}
 	if(!server->channel_exist(partsCmd[0]))
 	{
-		client->sendMessage("ERR_NOSUCHCHANNEL\n");
+		client.sendMessage("ERR_NOSUCHCHANNEL\n");
 		return;
 	}
 	channel_name = partsCmd[0];
 	mode = partsCmd[1];
 	if(server->client_exist(channel_name, client) == 0)
 	{
-		client->sendMessage("ERR_NOTONCHANNEL\n");
+		client.sendMessage("ERR_NOTONCHANNEL\n");
 		return;
 	}
 	if(server->client_isAdmin(channel_name, client) == 0)
 	{
-		client->sendMessage("ERR_CHANOPRIVSNEEDED\n");
+		client.sendMessage("ERR_CHANOPRIVSNEEDED\n");
 		return;
 	}
 	for(size_t i = 0; i < mode.size(); i++)
@@ -77,12 +77,12 @@ void parse::execute_mode(std::string arg, Server *server, Client *client)
 						pos++;
 						continue;
 					}
-					if(server->clientAdmin(channel_name, temp) == 0)
+					if(server->clientAdmin(channel_name, *temp) == 0)
 					{
 						pos++;
 						continue;
 					}
-					server->add_client_as_channel_admin(channel_name, temp);
+					server->add_client_as_channel_admin(channel_name, *temp);
 					pos++;
 				}
 				else
@@ -101,12 +101,12 @@ void parse::execute_mode(std::string arg, Server *server, Client *client)
 						pos++;
 						continue;
 					}
-					if(server->clientAdmin(channel_name, temp) != 0)
+					if(server->clientAdmin(channel_name, *temp) != 0)
 					{
 						pos++;
 						continue;
 					}
-					server->remove_client_as_channel_admin(channel_name, temp);
+					server->remove_client_as_channel_admin(channel_name, *temp);
 					pos++;
 				}
 			}
@@ -169,7 +169,7 @@ void parse::execute_mode(std::string arg, Server *server, Client *client)
 		}
 		else
 		{
-			client->sendMessage("ERR_UNKNOWNMODE\n");
+			client.sendMessage("ERR_UNKNOWNMODE\n");
 			return;
 		}
 	}

@@ -60,7 +60,8 @@ public:
 	void acceptNewConnection(void);
 	bool receiveClientData(size_t i);
 	void disconnectClient(size_t i);
-	void add_channel(std::string name,std::string key, int i) //-> add channel
+	void authenticateClient(std::string& command, int fd);
+	void add_channel(std::string name) //-> add channel
 	{
 		channel c(name);
 		channels.push_back(c);
@@ -74,7 +75,7 @@ public:
 		}
 		return 0;
 	}
-	int client_exist(std::string channel_name, Client *client)
+	int client_exist(std::string channel_name, Client &client)
 	{
 		for(size_t i = 0; i < channels.size();i++)
 		{
@@ -88,7 +89,7 @@ public:
 		}
 		return 0;
 	}
-	void add_client_to_channel(std::string channel_name, Client *client)
+	void add_client_to_channel(std::string channel_name, Client &client)
 	{
 		for(size_t i = 0; i < channels.size();i++)
 		{
@@ -124,7 +125,7 @@ public:
 		}
 		return "";
 	}
-	void remove_client_from_channels(Client *client)
+	void remove_client_from_channels(Client &client)
 	{
 		for(size_t i = 0; i < channels.size();i++)
 		{
@@ -148,7 +149,7 @@ public:
 		}
 		return 0;
 	}
-	int is_invitd(std::string channel_name, Client *client)
+	int is_invitd(std::string channel_name, Client &client)
 	{
 		for(size_t i = 0; i < channels.size();i++)
 		{
@@ -162,7 +163,7 @@ public:
 		}
 		return 0;
 	}
-	void add_client_as_channel_admin(std::string channel_name, Client *client)
+	void add_client_as_channel_admin(std::string channel_name, Client &client)
 	{
 		for(size_t i = 0; i < channels.size();i++)
 		{
@@ -195,7 +196,7 @@ public:
 			}
 		}
 	}
-	int client_isAdmin(std::string channel_name, Client *client)
+	int client_isAdmin(std::string channel_name, Client &client)
 	{
 		for(size_t i = 0; i < channels.size();i++)
 		{
@@ -266,7 +267,7 @@ public:
 		}
 		return NULL;
 	}
-	int clientAdmin(std::string channel_name, Client *client)
+	int clientAdmin(std::string channel_name, Client &client)
 	{
 		for(size_t i = 0; i < channels.size();i++)
 		{
@@ -280,7 +281,7 @@ public:
 		}
 		return 0;
 	}
-	void remove_client_as_channel_admin(std::string channel_name, Client *client)
+	void remove_client_as_channel_admin(std::string channel_name, Client &client)
 	{
 		for(size_t i = 0; i < channels.size();i++)
 		{

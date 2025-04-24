@@ -9,7 +9,7 @@ int parse::cmd_lenght(std::string str)
     return i;
 }
 
-void parse::execute_cmd(std::string cmd, std::string arg, Server *server, Client *client)
+void parse::execute_cmd(std::string cmd, std::string arg, Server *server, Client &client)
 {
     if (cmd == "JOIN")
     {
@@ -23,7 +23,7 @@ void parse::execute_cmd(std::string cmd, std::string arg, Server *server, Client
 
 
 
-parse::parse(char* buff, Server* server, Client* client)
+parse::parse(char* buff, Server* server, Client &client)
 {
     int len = cmd_lenght(buff);
     cmd = std::string(buff, len);
