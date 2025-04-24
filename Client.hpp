@@ -37,6 +37,7 @@ public:
 	int getFd(void) const;
 	std::string getNickName(void) const;
 	std::string getUserName(void) const;
+	std::string getIpAddress(void) const;
 	bool getHasPass(void) const;
 	bool getIsOP(void) const;
 

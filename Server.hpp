@@ -16,7 +16,8 @@
 # include <signal.h>
 # include "channel.hpp"
 # include "parse.hpp"
-#include "Client.hpp"
+# include "Client.hpp"
+# include "Bot.hpp"
 
 # define BACKLOG 1024
 # define BUFFER_SIZE 1024
@@ -32,6 +33,7 @@ extern bool g_running;
 
 class Client;
 class channel;
+class Bot;
 
 class Server
 {
@@ -48,6 +50,7 @@ private:
 	int sockfd;
 	int clientfd;
 	int pollStatus;
+	Bot *ircBot;
 
 public:
 	Server(int port, std::string& password);
@@ -57,7 +60,7 @@ public:
 	void acceptNewConnection(void);
 	bool receiveClientData(size_t i);
 	void disconnectClient(size_t i);
-	void add_channel(std::string name) //-> add channel
+	void add_channel(std::string name,std::string key, int i) //-> add channel
 	{
 		channel c(name);
 		channels.push_back(c);

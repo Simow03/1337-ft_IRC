@@ -25,6 +25,10 @@ std::string Client::getUserName(void) const
 	return username;
 }
 
+std::string Client::getIpAddress(void) const {
+	return ip;
+}
+
 bool Client::getHasPass(void) const
 {
 	return hasPass;
