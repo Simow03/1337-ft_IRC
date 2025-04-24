@@ -57,20 +57,11 @@ public:
 	void acceptNewConnection(void);
 	bool receiveClientData(size_t i);
 	void disconnectClient(size_t i);
-	void add_channel(std::string name,std::string key, int i) //-> add channel
+	void add_channel(std::string name) //-> add channel
 	{
-		channel c(name,key, i);
+		channel c(name);
 		channels.push_back(c);
 	}
-	// Client* get_client(int fd)
-	// {
-	// 	for(size_t i = 0; i < clients.size();i++)
-	// 	{
-	// 		if(clients[i].getFd() == fd)
-	// 			return &clients[i];
-	// 	}
-	// 	return NULL;
-	// }
 	int channel_exist(std::string channel_name)
 	{
 		for(size_t i = 0; i < channels.size();i++)
@@ -111,7 +102,7 @@ public:
 		{
 			if(channels[i].GetName() == channel_name)
 			{
-				if(channels[i].GetKey() != "")
+				if(channels[i].is_private == 1)
 					return 1;
 				else
 					return 0;
@@ -140,7 +131,7 @@ public:
 			}
 		}
 	}
-		int channel_need_inv(std::string channel_name)
+	int channel_need_inv(std::string channel_name)
 	{
 		for(size_t i = 0; i < channels.size();i++)
 		{
@@ -168,6 +159,155 @@ public:
 		}
 		return 0;
 	}
+	void add_client_as_channel_admin(std::string channel_name, Client *client)
+	{
+		for(size_t i = 0; i < channels.size();i++)
+		{
+			if(channels[i].GetName() == channel_name)
+			{
+				channels[i].add_client_as_admin(client);
+				return;
+			}
+		}
+	}
+	void set_channel_invite(std::string channel_name, int i)
+	{
+		for(size_t j = 0; j < channels.size();j++)
+		{
+			if(channels[j].GetName() == channel_name)
+			{
+				channels[j].is_invited = i;
+				return;
+			}
+		}
+	}
+	void set_channel_topic(std::string channel_name, int i)
+	{
+		for(size_t j = 0; j < channels.size();j++)
+		{
+			if(channels[j].GetName() == channel_name)
+			{
+				channels[j].topic_restricted = i;
+				return;
+			}
+		}
+	}
+	int client_isAdmin(std::string channel_name, Client *client)
+	{
+		for(size_t i = 0; i < channels.size();i++)
+		{
+			if(channels[i].GetName() == channel_name)
+			{
+				if(channels[i].client_is_admin(client))
+					return 1;
+				else
+					return 0;
+			}
+		}
+		return 0;
+	}
+	void set_channel_limit(std::string channel_name, int limit)
+	{
+		for(size_t j = 0; j < channels.size();j++)
+		{
+			if(channels[j].GetName() == channel_name)
+			{
+				channels[j].SetLimit(limit);
+				channels[j].is_limited = 1;
+				return;
+			}
+		}
+	}
+	void remove_channel_limit(std::string channel_name)
+	{
+		for(size_t j = 0; j < channels.size();j++)
+		{
+			if(channels[j].GetName() == channel_name)
+			{
+				channels[j].is_limited = 0;
+				return;
+			}
+		}
+	}
+	void set_channel_key(std::string channel_name, std::string key)
+	{
+		for(size_t j = 0; j < channels.size();j++)
+		{
+			if(channels[j].GetName() == channel_name)
+			{
+				channels[j].is_private = 1;
+				channels[j].Setkey(key);
+				return;
+			}
+		}
+	}
+	void remove_channel_key(std::string channel_name)
+	{
+		for(size_t j = 0; j < channels.size();j++)
+		{
+			if(channels[j].GetName() == channel_name)
+			{
+				channels[j].is_private = 0;
+				return;
+			}
+		}
+	}
+	Client *GetClientInChannel(std::string channel_name)
+	{
+		for(size_t i = 0; i < channels.size();i++)
+		{
+			if(channels[i].GetName() == channel_name)
+			{
+				return channels[i].GetClient(channel_name);
+			}
+		}
+		return NULL;
+	}
+	int clientAdmin(std::string channel_name, Client *client)
+	{
+		for(size_t i = 0; i < channels.size();i++)
+		{
+			if(channels[i].GetName() == channel_name)
+			{
+				if(channels[i].client_is_admin(client))
+					return 1;
+				else
+					return 0;
+			}
+		}
+		return 0;
+	}
+	void remove_client_as_channel_admin(std::string channel_name, Client *client)
+	{
+		for(size_t i = 0; i < channels.size();i++)
+		{
+			if(channels[i].GetName() == channel_name)
+			{
+				channels[i].remove_client_as_admin(client);
+				return;
+			}
+		}
+	}
+	int limit(std::string channel_name)
+	{
+		for(size_t i = 0; i < channels.size();i++)
+		{
+			if(channels[i].GetName() == channel_name)
+			{
+				int limit = channels[i].GetMaxUsers();
+				int size = channels[i].get_size();
+				if(channels[i].is_limited == 1)
+				{
+					if(size >= limit)
+						return 1;
+					return 0;
+				}
+				return 0;
+			}
+		}
+		return 0;
+	}
+
 };
 
 

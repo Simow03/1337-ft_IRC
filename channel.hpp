@@ -2,10 +2,13 @@
 #define CHANNEL_HPP
 
 
+
+# include <iostream>
 #include <string>
 #include <vector>
+#include "Client.hpp"
 
-class Client;
+// class Client;
 
 
 class channel
@@ -19,8 +22,10 @@ class channel
         std::vector<Client*> invited;
         int max_users;
     public:
+        int is_limited;
         int is_private;
         int is_invited;
+        int topic_restricted;
         channel(std::string name) : name(name) {
             is_private = 0;
             is_invited = 0;
@@ -34,6 +39,8 @@ class channel
         std::string GetTopic() { return topic; } //-> getter for topic
         std::string GetKey() { return key; } //-> getter for key
         std::string GetName() { return name; } //-> getter for name
+        int GetMaxUsers() { return max_users; } //-> getter for max_users
+        void Setkey(std::string k) { key = k; } //-> setter for key
         int if_invited(Client *c)
         {
             for(size_t i = 0; i < invited.size();i++)
@@ -67,6 +74,48 @@ class channel
                 }
             }
         }
+        void add_client_as_admin(Client *c)
+        {
+            admins.push_back(c);
+        }
+        void SetLimit(int limit)
+        {
+            max_users = limit;
+        }
+        Client *GetClient(std::string name)
+        {
+            for(size_t i = 0; i < users.size();i++)
+            {
+                if(users[i]->getNickName() == name)
+                    return users[i];
+            }
+            return NULL;
+        }
+        int client_is_admin(Client *c)
+        {
+            for(size_t i = 0; i < admins.size();i++)
+            {
+                if(admins[i] == c)
+                    return 1;
+            }
+            return 0;
+        }
+        void remove_client_as_admin(Client *c)
+        {
+            for(size_t i = 0; i < admins.size();i++)
+            {
+                if(admins[i] == c)
+                {
+                    admins.erase(admins.begin() + i);
+                    return;
+                }
+            }
+        }
+        int get_size()
+        {
+            return users.size();
+        }
+
 };
 
 

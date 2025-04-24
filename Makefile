@@ -2,11 +2,11 @@ NAME = ircserv
 
 CXX = c++
 
-CXXFLAGS = #-fsanitize=address -g #-Wall -Wextra -Werror -std=c++98
+CXXFLAGS = -fsanitize=address -g #-Wall -Wextra -Werror -std=c++98
 
-SRCS = main.cpp Server.cpp Client.cpp parse.cpp
+SRCS = main.cpp Server.cpp Client.cpp parse.cpp join.cpp mode.cpp
 
-HEADERS = Server.hpp
+HEADERS = Server.hpp Client.hpp parse.hpp join.hpp mode.hpp channel.hpp
 
 OBJS = ${SRCS:.cpp=.o}
 

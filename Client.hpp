@@ -1,7 +1,23 @@
 #ifndef CLIENT_HPP
 #define CLIENT_HPP
+# include <iostream>
 
-#include "Server.hpp"
+# include <sstream>
+# include <sys/types.h>
+# include <sys/socket.h>
+# include <netinet/in.h>
+# include <arpa/inet.h>
+# include <poll.h>
+# include <fcntl.h>
+# include <unistd.h>
+# include <vector>
+# include <cstring>
+# include <cerrno>
+# include <signal.h>
+class Server;
+// #include "Server.hpp"
+
+class channel;
 
 class Client
 {
