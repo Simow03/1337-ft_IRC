@@ -1,12 +1,11 @@
 #ifndef CHANNEL_HPP
 #define CHANNEL_HPP
 
-
+#include "Client.hpp"
 #include <string>
 #include <vector>
 
 class Client;
-
 
 class channel
 {
@@ -17,7 +16,7 @@ class channel
         std::vector<Client*> users;
         std::vector<Client*> admins;
         std::vector<Client*> invited;
-        int max_users;
+        // int max_users;
     public:
         int is_private;
         int is_invited;

@@ -29,10 +29,11 @@ Server::Server(int _port, std::string &_password) : port(_port), password(_passw
 			close(sockfd);
 			throw std::runtime_error("listen() : system call error.");
 		}
-
 		pollfds.fd = sockfd;
 		pollfds.events = POLLIN;
 		clientfds.push_back(pollfds);
+
+		ircBot = new Bot("IRC_BOT", "BOT !");
 
 		std::cout << YELLOW << BOLD << "\n\t. . . Waiting for connections . . .\n"
 				  << RESET << std::endl;
@@ -169,8 +170,10 @@ bool Server::receiveClientData(size_t i)
 
 	if (clientFound)
 	{
-
 		std::cout << CYAN << "\nclient " << fd << ": " << RESET << command << std::endl;
+
+		if (ircBot->isBotCommand(command))
+			ircBot->processCommand(command, *client, fd);
 
 		parse handl(buffer, this, client);
 
@@ -270,4 +273,6 @@ Server::~Server()
 		close(sockfd);
 
 	clientfds.clear();
+
+	delete ircBot;
 };
