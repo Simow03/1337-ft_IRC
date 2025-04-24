@@ -39,7 +39,7 @@ void parse::execute_join(std::string arg, Server *server, Client &client)
         std::cout << "ERR_NEEDMOREPARAMS" << std::endl;
         return;
     }
-    int j = 0;
+    size_t j = 0;
     while (j < channels.size())
     {
         if (channels[j][0] != '#' && channels[j][0] != '&')

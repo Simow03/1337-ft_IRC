@@ -21,7 +21,7 @@ void parse::execute_mode(std::string arg, Server *server, Client &client)
 	std ::string channel_name;
 	std::string mode;
 	int mode_sign = 1;
-	int pos = 2;
+	size_t pos = 2;
 
 	if(arg.empty())
 	{

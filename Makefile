@@ -2,7 +2,7 @@ NAME = ircserv
 
 CXX = c++
 
-CXXFLAGS = #-fsanitize=address -g #-Wall -Wextra -Werror -std=c++98
+CXXFLAGS = -Wall -Wextra -Werror -std=c++98 #-fsanitize=address -g
 
 SRCS = main.cpp Server.cpp Client.cpp parse.cpp join.cpp mode.cpp Bot.cpp
 
