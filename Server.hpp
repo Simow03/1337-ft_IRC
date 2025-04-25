@@ -366,6 +366,39 @@ public:
 			}
 		}
 	}
+	int is_topic_restricted(std::string channel_name)
+	{
+		for(size_t i = 0; i < channels.size();i++)
+		{
+			if(channels[i].GetName() == channel_name)
+			{
+				return channels[i].topic_restricted;
+			}
+		}
+		return 0;
+	}
+	std::string GetTopic(std::string channel_name)
+	{
+		for(size_t i = 0; i < channels.size();i++)
+		{
+			if(channels[i].GetName() == channel_name)
+			{
+				return channels[i].GetTopic();
+			}
+		}
+		return "";
+	}
+	void set_topic(std::string channel_name, std::string topic)
+	{
+		for(size_t i = 0; i < channels.size();i++)
+		{
+			if(channels[i].GetName() == channel_name)
+			{
+				channels[i].SetTopic(topic);
+				return;
+			}
+		}
+	}
 
 };
 

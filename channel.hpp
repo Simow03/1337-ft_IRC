@@ -39,6 +39,7 @@ class channel
         std::string GetTopic() { return topic; } //-> getter for topic
         std::string GetKey() { return key; } //-> getter for key
         std::string GetName() { return name; } //-> getter for name
+        void SetTopic(std::string t) { topic = t; } //-> setter for topic
         int GetMaxUsers() { return max_users; } //-> getter for max_users
         void Setkey(std::string k) { key = k; } //-> setter for key
         int if_invited(Client &c)

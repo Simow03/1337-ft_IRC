@@ -30,6 +30,7 @@ class parse
         void execute_mode(std::string arg, Server *server, Client &client);
         void execute_invite(std::string arg, Server *server, Client &client);
         void execute_kick(std::string arg, Server *server, Client &client);
+        void execute_topic(std::string arg, Server *server, Client &client);
 
     public:
         parse(char *buff,Server *server,Client &client);
