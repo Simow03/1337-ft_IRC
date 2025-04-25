@@ -21,8 +21,6 @@ void parse::execute_cmd(std::string cmd, std::string arg, Server *server, Client
     }
 }
 
-
-
 parse::parse(char* buff, Server* server, Client &client)
 {
     int len = cmd_lenght(buff);

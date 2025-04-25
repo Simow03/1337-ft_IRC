@@ -58,7 +58,7 @@ void Bot::execHelpCommand(int fd) const
                                "\t. l: set/remove the user limit to channel\n" + std::string(BOLD) + "  -> BOT :" + std::string(RESET) + " call bot to action\n"
                                "\t. !help: ask bot for the available commands and usage\n"
                                "\t. !ping: ping bot\n"
-                               "\t. !info: get information about client\n\n";
+                               "\t. !info: get information about client\n" + std::string(BOLD) + "  -> QUIT :" + std::string(RESET) + " disconnect from the server\n\n";
 
     send(fd, helpMssg.c_str(), helpMssg.size(), 0);
 };

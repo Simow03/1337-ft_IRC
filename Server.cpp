@@ -178,6 +178,8 @@ bool Server::receiveClientData(size_t i)
 		if(buffer[received - 1] == '\n')
 			buffer[received - 1] = '\0';
 
+		if (command == "QUIT")
+			disconnectClient(i);
 
 		parse handl(buffer, this, *client);
 
@@ -196,17 +198,41 @@ void Server::disconnectClient(size_t i)
 
 	std::cout << RED << BOLD << "\nclient " << fd << " disconnected!\n"
 			  << RESET << std::endl;
+	
+	std::string quitMssg = std::string(YELLOW) + std::string(BOLD) + "\n\t      You have been disconnected. GoodBye !\n\n" + std::string(RESET) ;
+    
+	send(fd, quitMssg.c_str(), quitMssg.size(), 0);
 
-	close(fd);
+	Client* disconnectedClient = NULL;
+	for (std::vector<Client>::iterator it = clients.begin(); it != clients.end(); ++it)
+	{
+		if (it->getFd() == fd) {
+			disconnectedClient = &(*it);
+			break;
+		}
+	}
 
-	clientfds.erase(clientfds.begin() + i);
+	if (disconnectedClient != NULL) {
+		for (size_t i = 0; i < channels.size(); i++) {
+			if (channels[i].client_exist(*disconnectedClient)) {
+				channels[i].remove_client(*disconnectedClient);
+				if (channels[i].client_is_admin(*disconnectedClient))
+					channels[i].remove_client_as_admin(*disconnectedClient);
+			}
+		}
+	}
 
 	for (std::vector<Client>::iterator it = clients.begin(); it != clients.end(); ++it)
 	{
-		if (it->getFd() == fd)
+		if (it->getFd() == fd) {
 			clients.erase(it);
-		break;
+			break;
+		}
 	}
+
+	close(fd);
+	clientfds.erase(clientfds.begin() + i);
+
 }
 
 void Server::authenticateClient(std::string &command, int fd)
