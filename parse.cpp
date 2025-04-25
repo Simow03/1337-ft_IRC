@@ -36,6 +36,14 @@ void parse::execute_cmd(std::string cmd, std::string arg, Server *server, Client
     {
         execute_invite(arg, server, client);
     }
+    else if(cmd == "KICK")
+    {
+        execute_kick(arg, server, client);
+    }
+    else
+    {
+        client.sendMessage("ERR_UNKNOWNCOMMAND\n");
+    }
 }
 
 

@@ -256,13 +256,13 @@ public:
 			}
 		}
 	}
-	Client *GetClientInChannel(std::string channel_name)
+	Client *GetClientInChannel(std::string channel_name, std::string client_name)
 	{
 		for(size_t i = 0; i < channels.size();i++)
 		{
 			if(channels[i].GetName() == channel_name)
 			{
-				return channels[i].GetClient(channel_name);
+				return channels[i].GetClient(client_name);
 			}
 		}
 		return NULL;
@@ -354,6 +354,17 @@ public:
 				return &clients[i];
 		}
 		return NULL;
+	}
+	void remove_client_from_channel(std::string channel_name, Client &client)
+	{
+		for(size_t i = 0; i < channels.size();i++)
+		{
+			if(channels[i].GetName() == channel_name)
+			{
+				channels[i].remove_client(client);
+				return;
+			}
+		}
 	}
 
 };

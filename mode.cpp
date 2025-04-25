@@ -58,7 +58,7 @@ void parse::execute_mode(std::string arg, Server *server, Client &client)
 				if(partsCmd.size() > pos)
 				{
 					std::string client_name = partsCmd[pos];
-					Client *temp = server->GetClientInChannel(client_name);
+					Client *temp = server->GetClientInChannel(channel_name, client_name);
 					if (temp == NULL)
 					{
 						pos++;
@@ -82,7 +82,7 @@ void parse::execute_mode(std::string arg, Server *server, Client &client)
 				if(partsCmd.size() > pos)
 				{
 					std::string client_name = partsCmd[pos];
-					Client *temp = server->GetClientInChannel(client_name);
+					Client *temp = server->GetClientInChannel(channel_name, client_name);
 					if (temp == NULL)
 					{
 						pos++;
