@@ -28,12 +28,15 @@ class parse
         int cmd_lenght(std::string str);
         void execute_join(std::string arg, Server *server, Client &client);
         void execute_mode(std::string arg, Server *server, Client &client);
+        void execute_invite(std::string arg, Server *server, Client &client);
 
     public:
         parse(char *buff,Server *server,Client &client);
 
 
+
 };
+std::vector<std::string>	Split(std::string recvmessage);
 
 
 

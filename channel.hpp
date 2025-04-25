@@ -115,7 +115,10 @@ class channel
         {
             return users.size();
         }
-
+        void add_client_as_invited(Client &c)
+        {
+            invited.push_back(c);
+        }
 };
 
 

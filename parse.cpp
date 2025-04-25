@@ -1,6 +1,19 @@
 #include "parse.hpp"
 
+std::vector<std::string>	Split(std::string recvmessage)
+{
+	std::vector<std::string> partsCmd;
 
+	std::istringstream stream(recvmessage);
+
+    std::string part;
+
+	while (stream >> part)
+    {
+        partsCmd.push_back(part);
+    }
+	return(partsCmd);
+}
 int parse::cmd_lenght(std::string str)
 {
     int i = 0;
@@ -18,6 +31,10 @@ void parse::execute_cmd(std::string cmd, std::string arg, Server *server, Client
     else if (cmd == "MODE")
     {
         execute_mode(arg, server, client);
+    }
+    else if(cmd == "INVITE")
+    {
+        execute_invite(arg, server, client);
     }
 }
 

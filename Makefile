@@ -4,7 +4,7 @@ CXX = c++
 
 CXXFLAGS = #-fsanitize=address -g #-Wall -Wextra -Werror -std=c++98
 
-SRCS = main.cpp Server.cpp Client.cpp parse.cpp join.cpp mode.cpp Bot.cpp
+SRCS = main.cpp Server.cpp Client.cpp parse.cpp join.cpp mode.cpp Bot.cpp invite.cpp
 
 HEADERS = Server.hpp Client.hpp parse.hpp join.hpp mode.hpp channel.hpp
 

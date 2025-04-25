@@ -2,20 +2,7 @@
 
 
 
-std::vector<std::string>	Split(std::string recvmessage)
-{
-	std::vector<std::string> partsCmd;
 
-	std::istringstream stream(recvmessage);
-
-    std::string part;
-
-	while (stream >> part)
-    {
-        partsCmd.push_back(part);
-    }
-	return(partsCmd);
-}
 void parse::execute_mode(std::string arg, Server *server, Client &client)
 {
 	std ::string channel_name;

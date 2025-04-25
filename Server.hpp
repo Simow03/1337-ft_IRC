@@ -311,6 +311,50 @@ public:
 		}
 		return 0;
 	}
+	int client_exist_by_name(std::string channel_name, std::string client_name)
+	{
+		for(size_t i = 0; i < channels.size();i++)
+		{
+			if(channels[i].GetName() == channel_name)
+			{
+				Client *temp = channels[i].GetClient(client_name);
+				if (temp == NULL)
+					return 0;
+				else
+					return 1;
+			}
+		}
+		return 0;
+	}
+	int client_in_server(std::string client_name)
+	{
+		for(size_t i = 0; i < clients.size();i++)
+		{
+			if(clients[i].getNickName() == client_name)
+				return 1;
+		}
+		return 0;
+	}
+	void add_client_as_invited(std::string channel_name, Client &client)
+	{
+		for(size_t i = 0; i < channels.size();i++)
+		{
+			if(channels[i].GetName() == channel_name)
+			{
+				channels[i].add_client_as_invited(client);
+				return;
+			}
+		}
+	}
+	Client *GetClientInServer(std::string client_name)
+	{
+		for(size_t i = 0; i < clients.size();i++)
+		{
+			if(clients[i].getNickName() == client_name)
+				return &clients[i];
+		}
+		return NULL;
+	}
 
 };
 
