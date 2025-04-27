@@ -120,6 +120,13 @@ class channel
         {
             invited.push_back(c);
         }
+        void sendMessageToAll(std::string message)
+        {
+            for(size_t i = 0; i < users.size();i++)
+            {
+                users[i].sendMessage(message);
+            }
+        }
 };
 
 

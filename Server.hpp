@@ -399,6 +399,17 @@ public:
 			}
 		}
 	}
+	void sendMessageToChannel(std::string channel_name, std::string message)
+	{
+		for(size_t i = 0; i < channels.size();i++)
+		{
+			if(channels[i].GetName() == channel_name)
+			{
+				channels[i].sendMessageToAll(message);
+				return;
+			}
+		}
+	}
 
 };
 

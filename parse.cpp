@@ -44,6 +44,12 @@ void parse::execute_cmd(std::string cmd, std::string arg, Server *server, Client
     {
         execute_topic(arg, server, client);
     }
+    else if(cmd =="PRIVMSG")
+    {
+        execute_privmsg(arg, server, client);
+    }
+    else if(cmd == "")
+        return;
     else
     {
         client.sendMessage("ERR_UNKNOWNCOMMAND\n");
