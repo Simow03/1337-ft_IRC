@@ -23,6 +23,16 @@
 # define BUFFER_SIZE 1024
 extern bool g_running;
 
+# define RPL_WELCOME           "001"
+# define RPL_YOURHOST          "002"
+# define RPL_CREATED           "003"
+# define RPL_MYINFO            "004"
+# define ERR_UNKNOWNCOMMAND    "421"
+# define ERR_NONICKNAMEGIVEN   "431"
+# define ERR_NICKNAMEINUSE     "433"
+# define ERR_NEEDMOREPARAMS    "461"
+# define ERR_PASSWDMISMATCH    "464"
+
 # define RED "\033[31m"
 # define BOLD "\033[1m"
 # define UNDERLINE "\033[4m"
@@ -61,6 +71,7 @@ public:
 	bool receiveClientData(size_t i);
 	void disconnectClient(size_t i);
 	void authenticateClient(std::string& command, int fd);
+	void sendIRCReply(int fd, const std::string& numeric, const std::string& target, const std::string& message);
 	void add_channel(std::string name) //-> add channel
 	{
 		channel c(name);

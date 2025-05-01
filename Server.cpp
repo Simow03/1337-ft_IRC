@@ -240,6 +240,7 @@ void Server::authenticateClient(std::string &command, int fd)
 
 	if (command.empty())
 	{
+		sendIRCReply(fd, ERR_NEEDMOREPARAMS, "ss", ":Not enough parameters");
 		std::string errorMssg = RED BOLD "\nPlease authenticate in this format : NICKNAME USERNAME PASSWORD\n" RESET;
 		send(fd, errorMssg.c_str(), errorMssg.size(), 0);
 		return;
@@ -262,12 +263,14 @@ void Server::authenticateClient(std::string &command, int fd)
 		}
 		if (!unique)
 		{
+			sendIRCReply(fd, ERR_NICKNAMEINUSE, "ss", ":Nickname is already in use");
 			std::string errorMssg = RED BOLD "\nNickname already in use. plase try again.\n" RESET;
 			send(fd, errorMssg.c_str(), errorMssg.size(), 0);
 			return;
 		}
 		if (inPass != password)
 		{
+			sendIRCReply(fd, ERR_PASSWDMISMATCH, "ss", ":Password incorrect");
 			std::string errorMsg = RED BOLD "\nInvalid password. Please try again.\n" RESET;
 			send(fd, errorMsg.c_str(), errorMsg.size(), 0);
 			return;
@@ -279,6 +282,7 @@ void Server::authenticateClient(std::string &command, int fd)
 
 		clients.push_back(client);
 
+		sendIRCReply(fd, RPL_WELCOME, nickname, ":Welcome to the irc.localhost Network," + nickname + "[!" + username + "@" + ipStr + "]");
 		std::string welcomeMsg = GREEN BOLD "\nAuthentication successful! Welcome, " + nickname + "!\n\n" RESET;
 		send(fd, welcomeMsg.c_str(), welcomeMsg.size(), 0);
 		std::cout << GREEN << BOLD << "\nclient " << fd << " authenticated successfuly!\n"
@@ -288,10 +292,17 @@ void Server::authenticateClient(std::string &command, int fd)
 	}
 	else
 	{
+		sendIRCReply(fd, ERR_NEEDMOREPARAMS, "ss", ":Not enough parameters");
 		std::string errorMsg = RED BOLD "\nInvalid format. Please use: NICKNAME USERNAME PASSWORD\n" RESET;
 		send(fd, errorMsg.c_str(), errorMsg.size(), 0);
 	}
 }
+
+void Server::sendIRCReply(int fd, const std::string& numeric, const std::string& target, const std::string& message){
+	std::string reply = ":" + std::string("irc.localhost") + " " + numeric + " " + target + " " + message + "\r\n";
+	send(fd, reply.c_str(), reply.length(), 0);
+}
+
 
 Server::~Server()
 {
