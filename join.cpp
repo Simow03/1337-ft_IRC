@@ -4,7 +4,6 @@
 
 void parse::execute_join(std::string arg, Server *server, Client &client)
 {
-    // std::cout << client->getFd() << std::endl;
     std::string ch;
     std::string key;
     int i = 0;
@@ -22,6 +21,7 @@ void parse::execute_join(std::string arg, Server *server, Client &client)
         server->remove_client_from_channels(client);
         return;
     }
+
     std::stringstream ss(ch);
     std::string token;
 
@@ -34,18 +34,19 @@ void parse::execute_join(std::string arg, Server *server, Client &client)
     {
         keys.push_back(token);
     }
+
     if (channels.empty())
     {
-        std::cout << "ERR_NEEDMOREPARAMS" << std::endl;
+        client.sendMessage("461 JOIN :Not enough parameters\r\n");
         return;
     }
+
     int j = 0;
     while (j < channels.size())
     {
         if (channels[j][0] != '#' && channels[j][0] != '&')
         {
-            client.sendMessage("ERR_NOSUCHCHANNEL\n");
-            std::cout << "ERR_NOSUCHCHANNEL" << std::endl;
+            client.sendMessage("403 " + client.getNickName() + " " + channels[j] + " :No such channel\r\n");
         }
         else
         {
@@ -53,21 +54,22 @@ void parse::execute_join(std::string arg, Server *server, Client &client)
             {
 				if (server->client_exist(channels[j], client))
 				{
-
-					std::cout << "Client already in channel" << std::endl;
-					client.sendMessage("ERR_USERONCHANNEL\n");
+					client.sendMessage("443 " + client.getNickName() + " " + channels[j] + " :is already on channel\r\n");
 				}
 				else
                 {
-                   std :: cout << "Attempting to add client to channel" << std::endl;
                    if (server->channel_need_inv(channels[j]) && !server->is_invitd(channels[j],client))
                    {
-                        std::cout << "Client not invited" << std::endl;
+                        client.sendMessage("473 " + client.getNickName() + " " + channels[j] + " :Cannot join channel (+i)\r\n");
                    }
                    else if (server->channel_need_inv(channels[j]) && server->is_invitd(channels[j],client))
                    {
-                        std::cout << "Client is invited" << std::endl;
                         server->add_client_to_channel(channels[j], client);
+                        std::vector<Client *> members = server->get_clients_in_channel(channels[j]);
+		                for (size_t i = 0; i < members.size(); ++i)
+		                {
+			                members[i]->sendMessage(":" + client.getNickName() + "!" + client.getUserName() + "@localhost JOIN " + channels[j] + "\r\n");
+                        }
                    }
                    else
                    {
@@ -76,30 +78,38 @@ void parse::execute_join(std::string arg, Server *server, Client &client)
                              std::string k = server->get_channel_key(channels[j]);
                              if (j >= keys.size() || keys[j] != k)
                              {
-                                 client.sendMessage("ERR_BADCHANNELKEY\n");
-                                 std::cout << "ERR_BADCHANNELKEY" << std::endl;
+                                client.sendMessage("475 " + client.getNickName() + " " + channels[j] + " :Cannot join channel (+k)\r\n");
                              }
                              else
                              {
                                 if(server->limit(channels[j]) == 1)
                                 {
-                                    client.sendMessage("ERR_CHANNELISFULL\n");
-                                    std::cout << "ERR_CHANNELISFULL" << std::endl;
-                                    return;
+                                    client.sendMessage("471 " + client.getNickName() + " " + channels[j] + " :Cannot join channel (+l)\r\n");
+                                    continue;
                                 }
-                                 server->add_client_to_channel(channels[j], client);
-                                 std::cout << "Client added to channel" << std::endl;
+                                server->add_client_to_channel(channels[j], client);
+                                // client.sendMessage("JOIN " + channels[j] + "\n");
+                                 std::vector<Client *> members = server->get_clients_in_channel(channels[j]);
+		                        for (size_t i = 0; i < members.size(); ++i)
+		                        {
+			                        members[i]->sendMessage(":" + client.getNickName() + "!" + client.getUserName() + "@localhost JOIN " + channels[j] + "\r\n");
+                                }
                              }
                         }
                         else
                         {
                             if(server->limit(channels[j]) == 1 )
                             {
-                                client.sendMessage("ERR_CHANNELISFULL\n");
-                                std::cout << "ERR_CHANNELISFULL" << std::endl;
-                                return;
+                                client.sendMessage("471 " + client.getNickName() + " " + channels[j] + " :Cannot join channel (+l)\r\n");
+                                continue;
                             }
                              server->add_client_to_channel(channels[j], client);
+                            //  client.sendMessage("JOIN " + channels[j] + "\n");
+                                 std::vector<Client *> members = server->get_clients_in_channel(channels[j]);
+		                        for (size_t i = 0; i < members.size(); ++i)
+		                        {
+			                        members[i]->sendMessage(":" + client.getNickName() + "!" + client.getUserName() + "@localhost JOIN " + channels[j] + "\r\n");
+                                }
                         }
                    }
                 }
@@ -109,9 +119,38 @@ void parse::execute_join(std::string arg, Server *server, Client &client)
                 server->add_channel(channels[j]);
                 server->add_client_as_channel_admin(channels[j], client);
                 server->add_client_to_channel(channels[j], client);
-                std::cout << "Channel created " << channels[j] << "!"<< std::endl;
+                // client.sendMessage("JOIN " + channels[j] + "\n");
+                std::vector<Client *> members = server->get_clients_in_channel(channels[j]);
+		        for (size_t i = 0; i < members.size(); ++i)
+		        {
+			        members[i]->sendMessage(":" + client.getNickName() + "!" + client.getUserName() + "@localhost JOIN " + channels[j] + "\r\n");
+                }
             }
         }
         j++;
     }
+    for (size_t i = 0; i < channels.size(); i++)
+    {
+        if (server->is_topic_restricted(channels[i]))
+        {
+            std::string topic = server->GetTopic(channels[i]);
+            client.sendMessage("332 " + client.getNickName() + " " + channels[i] + " :" + topic + "\r\n");
+        }
+    }
+    // purpose of this is to send the list of clients in the channel
+
+    std::vector<Client *> members = server->get_clients_in_channel(channels[0]);
+    std::string client_list = "353 " + client.getNickName() + " = " + channels[0] + " :";
+    for (size_t i = 0; i < members.size(); ++i)
+    {
+        client_list += members[i]->getNickName() + " ";
+    }
+    client_list += "\r\n";
+    client.sendMessage(client_list);
+    std::string end_list = "366 " + client.getNickName() + " " + channels[0] + " :End of NAMES list\r\n";
+    client.sendMessage(end_list);
+
+
+
+
 }

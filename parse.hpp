@@ -9,6 +9,7 @@
 #include "Server.hpp"
 #include "Client.hpp"
 #include "channel.hpp"
+# include "repl.hpp"
 // #include <iomanip>
 
 
@@ -34,7 +35,7 @@ class parse
         void execute_privmsg(std::string arg, Server *server, Client &client);
 
     public:
-        parse(char *buff,Server *server,Client &client);
+        parse(std ::string buff,Server *server,Client &client);
 
 
 

@@ -22,6 +22,7 @@ int parse::cmd_lenght(std::string str)
     return i;
 }
 
+
 void parse::execute_cmd(std::string cmd, std::string arg, Server *server, Client &client)
 {
     if (cmd == "JOIN")
@@ -52,16 +53,16 @@ void parse::execute_cmd(std::string cmd, std::string arg, Server *server, Client
         return;
     else
     {
-        client.sendMessage("ERR_UNKNOWNCOMMAND\n");
+        client.sendMessage("Unknown command");
     }
 }
 
 
 
-parse::parse(char* buff, Server* server, Client &client)
+parse::parse(std::string buff, Server* server, Client &client)
 {
     int len = cmd_lenght(buff);
-    cmd = std::string(buff, len);
-    arg = std::string(buff + len + 1);
+    cmd = buff.substr(0, len);
+    arg = buff.substr(len + 1);
     execute_cmd(cmd, arg, server, client);
 }

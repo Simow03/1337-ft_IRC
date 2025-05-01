@@ -151,6 +151,8 @@ bool Server::receiveClientData(size_t i)
 
 	while (!command.empty() && command.back() == '\n')
 		command.pop_back();
+	while (!command.empty() && command.back() == '\r')
+		command.pop_back();
 
 	bool clientFound = false;
 	Client *client = NULL;
@@ -175,11 +177,8 @@ bool Server::receiveClientData(size_t i)
 		if (ircBot->isBotCommand(command))
 			ircBot->processCommand(command, *client, fd);
 		// remove new line from variable buffer
-		if(buffer[received - 1] == '\n')
-			buffer[received - 1] = '\0';
 
-
-		parse handl(buffer, this, *client);
+		parse handl(command, this, *client);
 
 		return true;
 	}

@@ -3,17 +3,18 @@
 
 void send_msg_to_invited(Client &client, std::string channel_name, std::string client_name, Server *server)
 {
-	std::string msg = "INVITE " + client.getNickName() + " " + channel_name + "\n";
-	client.sendMessage(msg);
-	std::cout << "INVITE " + client.getNickName() + " " + channel_name + "\n";
-	Client *temp = server->GetClientInServer(client_name);
-	if (temp == NULL)
+	Client *inviter = server->GetClientInServer(client_name);
+	if (inviter == NULL)
 	{
-		client.sendMessage("ERR_NOSUCHNICK\n");
+		client.sendMessage("401 " + client.getNickName() + " " + client_name + " :No such nick/channel\n");
 		return;
 	}
-	std::string msg2 = "INVITE " + client.getNickName() + " " + channel_name + "\n";
-	temp->sendMessage(msg2);
+	std::string prefix = ":" + client.getNickName() + "!" + client.getUserName() + "@localhost";
+	client.sendMessage("341 " + client.getNickName() + " " + client_name + " " + channel_name + "\n");
+
+	inviter->sendMessage(prefix + " INVITE " + client_name + " :" + channel_name + "\n");
+
+	std::cout << prefix + " INVITE " + client_name + " :" + channel_name << std::endl;
 }
 
 void parse::execute_invite(std::string arg, Server *server, Client &client)
@@ -21,7 +22,7 @@ void parse::execute_invite(std::string arg, Server *server, Client &client)
 	std::vector<std::string> partsCmd = Split(arg);
 	if (partsCmd.size() < 2)
 	{
-		client.sendMessage("ERR_NEEDMOREPARAMS\n");
+		client.sendMessage("461 INVITE :Not enough parameters\n");
 		return;
 	}
 	std::string channel_name = partsCmd[1];
@@ -29,32 +30,31 @@ void parse::execute_invite(std::string arg, Server *server, Client &client)
 	Client *temp = server->GetClientInServer(client_name);
 	if(server->client_in_server(client_name) == 0)
 	{
-		client.sendMessage("ERR_NOSUCHNICK\n");
+		client.sendMessage("401 " + client.getNickName() + " " + client_name + " :No such nick/channel\n");
 		return;
 	}
 	if (server->channel_exist(channel_name) == 0)
 	{
-		client.sendMessage("ERR_NOSUCHCHANNEL\n");
+		client.sendMessage("403 " + client.getNickName() + " " + channel_name + " :No such channel\n");
 		return;
 	}
 	if(server->client_exist(channel_name, client) == 0)
 	{
-		client.sendMessage("ERR_NOTONCHANNEL\n");
+		client.sendMessage("442 " + client.getNickName() + " " + channel_name + " :You're not on that channel\n");
 		return;
 	}
 	if (server->client_exist_by_name(channel_name, client_name) == 1)
 	{
-		client.sendMessage("ERR_USERONCHANNEL\n");
+		client.sendMessage("443 " + client.getNickName() + " " + client_name + " " + channel_name + " :is already on channel\n");
 		return;
 	}
 	if (server->channel_need_inv(channel_name) == 1)
 	{
 		if(server->client_isAdmin(channel_name, client) == 0)
 		{
-			client.sendMessage("ERR_CHANOPRIVSNEEDED\n");
+			client.sendMessage("482 " + client.getNickName() + " " + channel_name + " :You're not channel operator\n");
 			return;
 		}
-		std ::cout << "client name: " << client_name << std::endl;
 		server->add_client_as_invited(channel_name, *temp);
 		send_msg_to_invited(client, channel_name, client_name, server);
 

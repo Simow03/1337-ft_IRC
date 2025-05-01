@@ -18,6 +18,7 @@
 # include "parse.hpp"
 # include "Client.hpp"
 # include "Bot.hpp"
+# include "repl.hpp"
 
 # define BACKLOG 1024
 # define BUFFER_SIZE 1024
@@ -410,6 +411,18 @@ public:
 			}
 		}
 	}
+	std::vector<Client *> get_clients_in_channel(std::string channel_name)
+	{
+		for(size_t i = 0; i < channels.size();i++)
+		{
+			if(channels[i].GetName() == channel_name)
+			{
+				return channels[i].get_clients();
+			}
+		}
+		return std::vector<Client *>();
+	}
+
 
 };
 

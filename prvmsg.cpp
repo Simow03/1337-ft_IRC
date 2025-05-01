@@ -6,7 +6,7 @@ void parse::execute_privmsg(std::string arg, Server *server, Client &client)
 	std::vector<std::string> partsCmd = Split(arg);
 	if (partsCmd.size() < 2)
 	{
-		client.sendMessage("ERR_NEEDMOREPARAMS\n");
+		client.sendMessage(" 461 PRIVMSG :Not enough parameters\n");
 		return;
 	}
 	std::string target = partsCmd[0];
@@ -22,7 +22,7 @@ void parse::execute_privmsg(std::string arg, Server *server, Client &client)
 	}
 	else
 	{
-		client.sendMessage("ERR_NOSUCHNICK\n");
+		client.sendMessage(" 401 " + target + " :No such nick/channel\n");
 		return;
 	}
 	if(partsCmd[1][0] != ':')

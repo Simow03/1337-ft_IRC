@@ -5,18 +5,18 @@ void parse::execute_topic(std::string arg, Server *server, Client &client)
 	std::vector<std::string> partsCmd = Split(arg);
 	if (partsCmd.size() < 1)
 	{
-		client.sendMessage("ERR_NEEDMOREPARAMS\n");
+		client.sendMessage("461 TOPIC :Not enough parameters\n");
 		return;
 	}
 	std::string channel_name = partsCmd[0];
 	if(!server->channel_exist(channel_name))
 	{
-		client.sendMessage("ERR_NOSUCHCHANNEL\n");
+		client.sendMessage("403 " + channel_name + " :No such channel\n");
 		return;
 	}
 	if(server->client_exist(channel_name, client) == 0)
 	{
-		client.sendMessage("ERR_NOTONCHANNEL\n");
+		client.sendMessage("442 " + channel_name + " :You're not on that channel\n");
 		return;
 	}
 
@@ -58,7 +58,7 @@ void parse::execute_topic(std::string arg, Server *server, Client &client)
 	{
 		if(server->client_isAdmin(channel_name, client) == 0)
 		{
-			client.sendMessage("ERR_CHANOPRIVSNEEDED\n");
+			client.sendMessage("482 " + channel_name + " :You're not channel operator\n");
 			return;
 		}
 		if(partsCmd.size() == 1)

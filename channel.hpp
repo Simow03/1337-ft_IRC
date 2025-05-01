@@ -127,6 +127,15 @@ class channel
                 users[i].sendMessage(message);
             }
         }
+        std::vector<Client *> get_clients()
+        {
+            std::vector<Client *> clients;
+            for(size_t i = 0; i < users.size();i++)
+            {
+                clients.push_back(&users[i]);
+            }
+            return clients;
+        }
 };
 
 
