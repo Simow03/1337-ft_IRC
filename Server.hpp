@@ -1,24 +1,25 @@
 #ifndef SERVER_HPP
 #define SERVER_HPP
 
-#include <iostream>
-#include <sstream>
-#include <sys/types.h>
-#include <sys/socket.h>
-#include <netinet/in.h>
-#include <arpa/inet.h>
-#include <poll.h>
-#include <fcntl.h>
-#include <unistd.h>
-#include <vector>
+# include <iostream>
+# include <sstream>
+# include <sys/types.h>
+# include <sys/socket.h>
+# include <netinet/in.h>
+# include <arpa/inet.h>
+# include <poll.h>
+# include <fcntl.h>
+# include <unistd.h>
+# include <vector>
 #include <set>
-#include <cstring>
-#include <cerrno>
-#include <signal.h>
-#include "channel.hpp"
-#include "parse.hpp"
-#include "Client.hpp"
-#include "Bot.hpp"
+# include <cstring>
+# include <cerrno>
+# include <signal.h>
+# include "channel.hpp"
+# include "parse.hpp"
+# include "Client.hpp"
+# include "Bot.hpp"
+# include "repl.hpp"
 
 #define BACKLOG 1024
 #define BUFFER_SIZE 1024
@@ -277,13 +278,13 @@ public:
 			}
 		}
 	}
-	Client *GetClientInChannel(std::string channel_name)
+	Client *GetClientInChannel(std::string channel_name, std::string client_name)
 	{
 		for (size_t i = 0; i < channels.size(); i++)
 		{
 			if (channels[i].GetName() == channel_name)
 			{
-				return channels[i].GetClient(channel_name);
+				return channels[i].GetClient(client_name);
 			}
 		}
 		return NULL;
@@ -332,6 +333,118 @@ public:
 		}
 		return 0;
 	}
+	int client_exist_by_name(std::string channel_name, std::string client_name)
+	{
+		for(size_t i = 0; i < channels.size();i++)
+		{
+			if(channels[i].GetName() == channel_name)
+			{
+				Client *temp = channels[i].GetClient(client_name);
+				if (temp == NULL)
+					return 0;
+				else
+					return 1;
+			}
+		}
+		return 0;
+	}
+	int client_in_server(std::string client_name)
+	{
+		for(size_t i = 0; i < clients.size();i++)
+		{
+			if(clients[i].getNickName() == client_name)
+				return 1;
+		}
+		return 0;
+	}
+	void add_client_as_invited(std::string channel_name, Client &client)
+	{
+		for(size_t i = 0; i < channels.size();i++)
+		{
+			if(channels[i].GetName() == channel_name)
+			{
+				channels[i].add_client_as_invited(client);
+				return;
+			}
+		}
+	}
+	Client *GetClientInServer(std::string client_name)
+	{
+		for(size_t i = 0; i < clients.size();i++)
+		{
+			if(clients[i].getNickName() == client_name)
+				return &clients[i];
+		}
+		return NULL;
+	}
+	void remove_client_from_channel(std::string channel_name, Client &client)
+	{
+		for(size_t i = 0; i < channels.size();i++)
+		{
+			if(channels[i].GetName() == channel_name)
+			{
+				channels[i].remove_client(client);
+				return;
+			}
+		}
+	}
+	int is_topic_restricted(std::string channel_name)
+	{
+		for(size_t i = 0; i < channels.size();i++)
+		{
+			if(channels[i].GetName() == channel_name)
+			{
+				return channels[i].topic_restricted;
+			}
+		}
+		return 0;
+	}
+	std::string GetTopic(std::string channel_name)
+	{
+		for(size_t i = 0; i < channels.size();i++)
+		{
+			if(channels[i].GetName() == channel_name)
+			{
+				return channels[i].GetTopic();
+			}
+		}
+		return "";
+	}
+	void set_topic(std::string channel_name, std::string topic)
+	{
+		for(size_t i = 0; i < channels.size();i++)
+		{
+			if(channels[i].GetName() == channel_name)
+			{
+				channels[i].SetTopic(topic);
+				return;
+			}
+		}
+	}
+	void sendMessageToChannel(std::string channel_name, std::string message)
+	{
+		for(size_t i = 0; i < channels.size();i++)
+		{
+			if(channels[i].GetName() == channel_name)
+			{
+				channels[i].sendMessageToAll(message);
+				return;
+			}
+		}
+	}
+	std::vector<Client *> get_clients_in_channel(std::string channel_name)
+	{
+		for(size_t i = 0; i < channels.size();i++)
+		{
+			if(channels[i].GetName() == channel_name)
+			{
+				return channels[i].get_clients();
+			}
+		}
+		return std::vector<Client *>();
+	}
+
+
 };
 
 #endif

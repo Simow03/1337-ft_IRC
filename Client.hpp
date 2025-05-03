@@ -14,6 +14,7 @@
 # include <cstring>
 # include <cerrno>
 # include <signal.h>
+# include "repl.hpp"
 class Server;
 // #include "Server.hpp"
 

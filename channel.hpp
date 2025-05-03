@@ -39,6 +39,7 @@ class channel
         std::string GetTopic() { return topic; } //-> getter for topic
         std::string GetKey() { return key; } //-> getter for key
         std::string GetName() { return name; } //-> getter for name
+        void SetTopic(std::string t) { topic = t; } //-> setter for topic
         int GetMaxUsers() { return max_users; } //-> getter for max_users
         void Setkey(std::string k) { key = k; } //-> setter for key
         int if_invited(Client &c)
@@ -115,7 +116,26 @@ class channel
         {
             return users.size();
         }
-
+        void add_client_as_invited(Client &c)
+        {
+            invited.push_back(c);
+        }
+        void sendMessageToAll(std::string message)
+        {
+            for(size_t i = 0; i < users.size();i++)
+            {
+                users[i].sendMessage(message);
+            }
+        }
+        std::vector<Client *> get_clients()
+        {
+            std::vector<Client *> clients;
+            for(size_t i = 0; i < users.size();i++)
+            {
+                clients.push_back(&users[i]);
+            }
+            return clients;
+        }
 };
 
 
