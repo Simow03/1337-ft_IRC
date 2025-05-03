@@ -91,6 +91,12 @@ void Server::runServer()
 				}
 				if (clientfds[i].revents & (POLLHUP | POLLERR | POLLNVAL))
 				{
+					int fd = clientfds[i].fd;
+					if (newlyConnectedClients.find(fd) != newlyConnectedClients.end()) {
+						newlyConnectedClients.erase(fd);
+						continue;
+					}
+
 					disconnectClient(i);
 					i--;
 				}
@@ -123,12 +129,10 @@ void Server::acceptNewConnection()
 		pollfds.events = POLLIN;
 		clientfds.push_back(pollfds);
 
+		newlyConnectedClients.insert(clientfd);
+
 		std::cout << GREEN << BOLD << "\nclient " << clientfd << " connected successfuly!\n"
 				  << RESET << std::endl;
-
-		std::string authMssg = GREEN BOLD "\n\tWelcome to the server!\n\n" RESET "Please authenticate in this format : NICKNAME USERNAME PASSWORD\n" RESET;
-
-		send(clientfd, authMssg.c_str(), authMssg.size(), 0);
 
 	} while (clientfd != -1);
 }
@@ -142,54 +146,210 @@ bool Server::receiveClientData(size_t i)
 	int fd = clientfds[i].fd;
 	int received = recv(fd, buffer, sizeof(buffer) - 1, 0);
 
-	if (received < 0)
+	if (received < 0) {
+		if (errno == EWOULDBLOCK || errno == EAGAIN) {
+			return true;
+		}
+
 		return false;
+	}
 
 	buffer[received] = '\0';
 
-	std::string command(buffer);
+	std::string message(buffer);
+	size_t pos = 0;
+	std::string command;
 
-	while (!command.empty() && command.back() == '\n')
-		command.pop_back();
+	while ((pos = message.find("\r\n")) != std::string::npos || (pos = message.find("\n")) != std::string::npos)
+	{
+		command = message.substr(0, pos);
+		message.erase(0, pos + (message[pos] == '\r' ? 2 : 1));
+		if (!command.empty()) {
+			processCommand(buffer, command, fd, i);
+		}
+	}
+
+	if (!message.empty()) {
+		processCommand(buffer, message, fd, i);
+	}
+
+	return true;
+}
+
+void Server::processCommand(char *buffer, std::string &command, int fd, size_t i)
+{
+
+	std::cout << CYAN << "\nclient " << fd << ": " << RESET << command << std::endl;
+
+	std::stringstream iss(command);
+	std::string cmd;
+	iss >> cmd;
 
 	bool clientFound = false;
 	Client *client = NULL;
-
-	std::vector<Client>::iterator clientIt = clients.end();
 
 	for (std::vector<Client>::iterator it = clients.begin(); it != clients.end(); ++it)
 	{
 		if (it->getFd() == fd)
 		{
 			clientFound = true;
-			clientIt = it;
 			client = &(*it);
 			break;
 		}
 	}
 
-	if (clientFound)
+	if (cmd == "NICK")
 	{
-		std::cout << CYAN << "\nclient " << fd << ": " << RESET << command << std::endl;
+		std::string nickname;
+		iss >> nickname;
 
-		if (ircBot->isBotCommand(command))
-			ircBot->processCommand(command, *client, fd);
-		// remove new line from variable buffer
-		if(buffer[received - 1] == '\n')
-			buffer[received - 1] = '\0';
+		if (nickname.empty())
+		{
+			std::vector<std::string> errParams;
+			errParams.push_back("No nickname given");
+			sendNumericReply(fd, ERR_NONICKNAMEGIVEN, "*", errParams);
+			return;
+		}
 
-		if (command == "QUIT")
-			disconnectClient(i);
+		bool unique = true;
 
-		parse handl(buffer, this, *client);
+		for (std::vector<Client>::iterator it = clients.begin(); it != clients.end(); ++it)
+		{
+			if (it->getNickName() == nickname && it->getFd() != fd)
+			{
+				unique = false;
+				break;
+			}
+		}
 
-		return true;
+		if (!unique)
+		{
+			std::vector<std::string> errParams;
+			errParams.push_back(nickname);
+			errParams.push_back("Nickname is already in use");
+			sendNumericReply(fd, ERR_NICKNAMEINUSE, "*", errParams);
+			return;
+		}
+
+		if (clientFound) {
+			client->setNickName(nickname);
+
+			if (!client->getUserName().empty() && !client->getIsAuthenticated()) {
+				client->setIsAuthenticated(true);
+				sendWelcomeMessage(fd, nickname);
+
+				std::cout << GREEN << BOLD << "\nclient " << fd << " authenticated successfuly!\n"
+				  << RESET << std::endl;
+			}
+		}
+		else {
+			std::string ipStr = inet_ntoa(ca.sin_addr);
+			std::string tempUsername = "";
+			Client newClient(fd, ipStr, nickname, tempUsername, false, false);
+			clients.push_back(newClient);
+			std::cout << GREEN << BOLD << "\nclient " << fd << " added with nickname : " << nickname << "!\n"
+				  << RESET << std::endl;
+		}
+
+	}
+	else if (cmd == "USER")
+	{
+		std::string username;
+		iss >> username;
+	
+		if (username.empty())
+		{
+			std::vector<std::string> errParams;
+			errParams.push_back("USER");
+			errParams.push_back("Not enough parameters");
+			sendNumericReply(fd, ERR_NEEDMOREPARAMS, "*", errParams);
+			return;
+		}
+
+		if (clientFound) {
+			client->setUserName(username);
+
+			if (!client->getNickName().empty() && !client->getIsAuthenticated()) {
+				client->setIsAuthenticated(true);
+				sendWelcomeMessage(fd, client->getNickName());
+				std::cout << GREEN << BOLD << "\nclient " << fd << " authenticated successfuly!\n"
+				  << RESET << std::endl;
+			}
+		}
+		else {
+			std::string ipStr = inet_ntoa(ca.sin_addr);
+			std::string tempNickname = "";
+			Client newClient(fd, ipStr, tempNickname, username, false, false);
+			clients.push_back(newClient);
+			std::cout << GREEN << BOLD << "\nclient " << fd << " added with username : " << username << "!\n"
+				  << RESET << std::endl;
+		}
+
+	}
+	else if (cmd == "PASS")
+	{
+		std::string inPass;
+		if (iss >> inPass)
+		{
+			if (!inPass.empty() && inPass[0] == ':')
+				inPass = inPass.substr(1);
+			if (inPass != password)
+			{
+				std::vector<std::string> params;
+				params.push_back("Password incorrect");
+				sendNumericReply(fd, ERR_PASSWDMISMATCH, "*", params);
+				return;
+			}
+		}
+		else
+		{
+			std::vector<std::string> params;
+			params.push_back("PASS");
+			params.push_back("Not enough parameters");
+			sendNumericReply(fd, ERR_NEEDMOREPARAMS, "*", params);
+		}
+	}
+	else if (cmd == "PING")
+	{
+		std::string extraParam;
+		iss >> extraParam;
+
+		std::vector<std::string> toPushParams;
+		toPushParams.push_back(extraParam.empty() ? "IRC.localhost" : extraParam);
+		sendIRCReply(fd, "IRC.localhost", "PONG", toPushParams);
+	}
+	else if (cmd == "QUIT")
+	{
+		disconnectClient(i);
 	}
 
 	else
-		authenticateClient(command, fd);
+	{
+		if (!clientFound)
+		{
+			std::vector<std::string> params;
+			params.push_back(cmd);
+			params.push_back("You must complete registration first");
+			sendNumericReply(fd, ERR_NOTREGISTERED, "*", params);
+			return;
+		}
+		else if (!client->getIsAuthenticated())
+		{
+			std::vector<std::string> params;
+			params.push_back(cmd);
+			params.push_back("You must complete registration first");
+			sendNumericReply(fd, ERR_NOTREGISTERED, client->getNickName().empty() ? "*" : client->getNickName(), params);
+			return;
+		}
+		else
+		{
 
-	return true;
+			if (ircBot->isBotCommand(command))
+				ircBot->processCommand(command, *client, fd);
+
+			parse handl(buffer, this, *client);
+		}
+	}
 }
 
 void Server::disconnectClient(size_t i)
@@ -198,23 +358,27 @@ void Server::disconnectClient(size_t i)
 
 	std::cout << RED << BOLD << "\nclient " << fd << " disconnected!\n"
 			  << RESET << std::endl;
-	
-	std::string quitMssg = std::string(YELLOW) + std::string(BOLD) + "\n\t      You have been disconnected. GoodBye !\n\n" + std::string(RESET) ;
-    
+
+	std::string quitMssg = std::string(YELLOW) + std::string(BOLD) + "\n\t      You have been disconnected. GoodBye !\n\n" + std::string(RESET);
+
 	send(fd, quitMssg.c_str(), quitMssg.size(), 0);
 
-	Client* disconnectedClient = NULL;
+	Client *disconnectedClient = NULL;
 	for (std::vector<Client>::iterator it = clients.begin(); it != clients.end(); ++it)
 	{
-		if (it->getFd() == fd) {
+		if (it->getFd() == fd)
+		{
 			disconnectedClient = &(*it);
 			break;
 		}
 	}
 
-	if (disconnectedClient != NULL) {
-		for (size_t i = 0; i < channels.size(); i++) {
-			if (channels[i].client_exist(*disconnectedClient)) {
+	if (disconnectedClient != NULL)
+	{
+		for (size_t i = 0; i < channels.size(); i++)
+		{
+			if (channels[i].client_exist(*disconnectedClient))
+			{
 				channels[i].remove_client(*disconnectedClient);
 				if (channels[i].client_is_admin(*disconnectedClient))
 					channels[i].remove_client_as_admin(*disconnectedClient);
@@ -224,7 +388,8 @@ void Server::disconnectClient(size_t i)
 
 	for (std::vector<Client>::iterator it = clients.begin(); it != clients.end(); ++it)
 	{
-		if (it->getFd() == fd) {
+		if (it->getFd() == fd)
+		{
 			clients.erase(it);
 			break;
 		}
@@ -232,77 +397,88 @@ void Server::disconnectClient(size_t i)
 
 	close(fd);
 	clientfds.erase(clientfds.begin() + i);
-
 }
 
-void Server::authenticateClient(std::string &command, int fd)
+void Server::sendIRCReply(int fd, const std::string &prefix, const std::string &command, const std::vector<std::string> &params)
+{
+	std::string message = prefix.empty() ? "" : ":" + prefix + " ";
+	message += command;
+
+	for (size_t i = 0; i < params.size(); ++i)
+	{
+		if (i == params.size() - 1 && params[i].find(' ') != std::string::npos)
+		{
+			message += " :" + params[i];
+		}
+		else
+		{
+			message += " " + params[i];
+		}
+	}
+
+	message += "\r\n";
+	send(fd, message.c_str(), message.length(), 0);
+}
+
+void Server::sendNumericReply(int fd, const std::string &numeric, const std::string &nickname, const std::vector<std::string> &params)
+{
+	std::vector<std::string> newParams;
+	newParams.push_back(nickname);
+
+	for (size_t i = 0; i < params.size(); ++i)
+	{
+		newParams.push_back(params[i]);
+	}
+	sendIRCReply(fd, "IRC.localhost", numeric, newParams);
+}
+
+void Server::sendWelcomeMessage(int fd, std::string nickname)
 {
 
-	if (command.empty())
-	{
-		sendIRCReply(fd, ERR_NEEDMOREPARAMS, "ss", ":Not enough parameters");
-		std::string errorMssg = RED BOLD "\nPlease authenticate in this format : NICKNAME USERNAME PASSWORD\n" RESET;
-		send(fd, errorMssg.c_str(), errorMssg.size(), 0);
-		return;
-	}
+	std::vector<std::string> params;
 
-	std::istringstream iss(command);
-	std::string nickname, username, inPass;
+	params.push_back("Welcome to the IRC Network " + nickname + "!");
+	sendNumericReply(fd, RPL_WELCOME, nickname, params);
 
-	if (iss >> nickname >> username >> inPass)
-	{
-		bool unique = true;
+	params.clear();
+	params.push_back("Your host is IRC.localhost, running version 1.0");
+	sendNumericReply(fd, RPL_YOURHOST, nickname, params);
 
-		for (std::vector<Client>::iterator it = clients.begin(); it != clients.end(); ++it)
-		{
-			if (it->getNickName() == nickname)
-			{
-				unique = false;
-				break;
-			}
-		}
-		if (!unique)
-		{
-			sendIRCReply(fd, ERR_NICKNAMEINUSE, "ss", ":Nickname is already in use");
-			std::string errorMssg = RED BOLD "\nNickname already in use. plase try again.\n" RESET;
-			send(fd, errorMssg.c_str(), errorMssg.size(), 0);
-			return;
-		}
-		if (inPass != password)
-		{
-			sendIRCReply(fd, ERR_PASSWDMISMATCH, "ss", ":Password incorrect");
-			std::string errorMsg = RED BOLD "\nInvalid password. Please try again.\n" RESET;
-			send(fd, errorMsg.c_str(), errorMsg.size(), 0);
-			return;
-		}
+	params.clear();
+	params.push_back("This server was created April 2025");
+	sendNumericReply(fd, RPL_CREATED, nickname, params);
 
-		std::string ipStr = inet_ntoa(ca.sin_addr);
+	params.clear();
+	params.push_back("IRC.localhost");
+	params.push_back("1.0");
+	params.push_back("i");
+	params.push_back("t");
+	params.push_back("k");
+	params.push_back("o");
+	params.push_back("l");
+	sendNumericReply(fd, RPL_MYINFO, nickname, params);
 
-		Client client(fd, ipStr, nickname, username, true);
+	params.clear();
+	params.push_back("CHANNELLEN=");
+	params.push_back("NICKLEN=");
+	params.push_back("NETWORK=IRC");
+	params.push_back("PREFIX=");
+	params.push_back("CHANMODES=i,t,k,o,l");
+	params.push_back("are supported by this server");
+	sendNumericReply(fd, RPL_ISUPPORT, nickname, params);
 
-		clients.push_back(client);
+	params.clear();
+	params.push_back("- Message of the Day -");
+	sendNumericReply(fd, RPL_MOTDSTART, nickname, params);
 
-		sendIRCReply(fd, RPL_WELCOME, nickname, ":Welcome to the irc.localhost Network," + nickname + "[!" + username + "@" + ipStr + "]");
-		std::string welcomeMsg = GREEN BOLD "\nAuthentication successful! Welcome, " + nickname + "!\n\n" RESET;
-		send(fd, welcomeMsg.c_str(), welcomeMsg.size(), 0);
-		std::cout << GREEN << BOLD << "\nclient " << fd << " authenticated successfuly!\n"
-				  << RESET << std::endl;
+	params.clear();
+	params.push_back("- Welcome to the IRC server!");
+	sendNumericReply(fd, RPL_MOTD, nickname, params);
 
-		return;
-	}
-	else
-	{
-		sendIRCReply(fd, ERR_NEEDMOREPARAMS, "ss", ":Not enough parameters");
-		std::string errorMsg = RED BOLD "\nInvalid format. Please use: NICKNAME USERNAME PASSWORD\n" RESET;
-		send(fd, errorMsg.c_str(), errorMsg.size(), 0);
-	}
+	params.clear();
+	params.push_back("- End of MOTD");
+	sendNumericReply(fd, RPL_ENDOFMOTD, nickname, params);
 }
-
-void Server::sendIRCReply(int fd, const std::string& numeric, const std::string& target, const std::string& message){
-	std::string reply = ":" + std::string("irc.localhost") + " " + numeric + " " + target + " " + message + "\r\n";
-	send(fd, reply.c_str(), reply.length(), 0);
-}
-
 
 Server::~Server()
 {

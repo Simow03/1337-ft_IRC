@@ -1,45 +1,51 @@
 #ifndef SERVER_HPP
-# define SERVER_HPP
+#define SERVER_HPP
 
-# include <iostream>
-# include <sstream>
-# include <sys/types.h>
-# include <sys/socket.h>
-# include <netinet/in.h>
-# include <arpa/inet.h>
-# include <poll.h>
-# include <fcntl.h>
-# include <unistd.h>
-# include <vector>
-# include <cstring>
-# include <cerrno>
-# include <signal.h>
-# include "channel.hpp"
-# include "parse.hpp"
-# include "Client.hpp"
-# include "Bot.hpp"
+#include <iostream>
+#include <sstream>
+#include <sys/types.h>
+#include <sys/socket.h>
+#include <netinet/in.h>
+#include <arpa/inet.h>
+#include <poll.h>
+#include <fcntl.h>
+#include <unistd.h>
+#include <vector>
+#include <set>
+#include <cstring>
+#include <cerrno>
+#include <signal.h>
+#include "channel.hpp"
+#include "parse.hpp"
+#include "Client.hpp"
+#include "Bot.hpp"
 
-# define BACKLOG 1024
-# define BUFFER_SIZE 1024
+#define BACKLOG 1024
+#define BUFFER_SIZE 1024
 extern bool g_running;
 
-# define RPL_WELCOME           "001"
-# define RPL_YOURHOST          "002"
-# define RPL_CREATED           "003"
-# define RPL_MYINFO            "004"
-# define ERR_UNKNOWNCOMMAND    "421"
-# define ERR_NONICKNAMEGIVEN   "431"
-# define ERR_NICKNAMEINUSE     "433"
-# define ERR_NEEDMOREPARAMS    "461"
-# define ERR_PASSWDMISMATCH    "464"
+#define RPL_WELCOME "001"
+#define RPL_YOURHOST "002"
+#define RPL_CREATED "003"
+#define RPL_MYINFO "004"
+#define RPL_ISUPPORT "005"
+#define RPL_MOTDSTART "375"
+#define RPL_MOTD "372"
+#define RPL_ENDOFMOTD "376"
+#define ERR_UNKNOWNCOMMAND "421"
+#define ERR_NONICKNAMEGIVEN "431"
+#define ERR_NICKNAMEINUSE "433"
+#define ERR_NEEDMOREPARAMS "461"
+#define ERR_PASSWDMISMATCH "464"
+#define ERR_NOTREGISTERED "451"
 
-# define RED "\033[31m"
-# define BOLD "\033[1m"
-# define UNDERLINE "\033[4m"
-# define RESET "\033[0m"
-# define YELLOW "\033[33m"
-# define GREEN "\033[32m"
-# define CYAN "\033[36m"
+#define RED "\033[31m"
+#define BOLD "\033[1m"
+#define UNDERLINE "\033[4m"
+#define RESET "\033[0m"
+#define YELLOW "\033[33m"
+#define GREEN "\033[32m"
+#define CYAN "\033[36m"
 
 class Client;
 class channel;
@@ -55,23 +61,27 @@ private:
 	socklen_t ca_len;
 	struct pollfd pollfds;
 	std::vector<struct pollfd> clientfds;
-	std::vector<Client > clients;
+	std::vector<Client> clients;
 	std::vector<channel> channels;
+	std::set<int> newlyConnectedClients;
 	int sockfd;
 	int clientfd;
 	int pollStatus;
 	Bot *ircBot;
 
 public:
-	Server(int port, std::string& password);
+	Server(int port, std::string &password);
 	~Server();
 
 	void runServer(void);
 	void acceptNewConnection(void);
 	bool receiveClientData(size_t i);
 	void disconnectClient(size_t i);
-	void authenticateClient(std::string& command, int fd);
-	void sendIRCReply(int fd, const std::string& numeric, const std::string& target, const std::string& message);
+	void processCommand(char *buffer, std::string &command, int fd, size_t i);
+	// void authenticateClient(std::string& command, int fd);
+	void sendIRCReply(int fd, const std::string &prefix, const std::string &command, const std::vector<std::string> &params);
+	void sendNumericReply(int fd, const std::string &numeric, const std::string &nickname, const std::vector<std::string> &params);
+	void sendWelcomeMessage(int fd, std::string nickname);
 	void add_channel(std::string name) //-> add channel
 	{
 		channel c(name);
@@ -79,20 +89,20 @@ public:
 	}
 	int channel_exist(std::string channel_name)
 	{
-		for(size_t i = 0; i < channels.size();i++)
+		for (size_t i = 0; i < channels.size(); i++)
 		{
-			if(channels[i].GetName() == channel_name)
+			if (channels[i].GetName() == channel_name)
 				return 1;
 		}
 		return 0;
 	}
 	int client_exist(std::string channel_name, Client &client)
 	{
-		for(size_t i = 0; i < channels.size();i++)
+		for (size_t i = 0; i < channels.size(); i++)
 		{
-			if(channels[i].GetName() == channel_name)
+			if (channels[i].GetName() == channel_name)
 			{
-				if(channels[i].client_exist(client))
+				if (channels[i].client_exist(client))
 					return 1;
 				else
 					return 0;
@@ -102,9 +112,9 @@ public:
 	}
 	void add_client_to_channel(std::string channel_name, Client &client)
 	{
-		for(size_t i = 0; i < channels.size();i++)
+		for (size_t i = 0; i < channels.size(); i++)
 		{
-			if(channels[i].GetName() == channel_name)
+			if (channels[i].GetName() == channel_name)
 			{
 				channels[i].add_client(client);
 				return;
@@ -113,11 +123,11 @@ public:
 	}
 	int channel_has_key(std::string channel_name)
 	{
-		for(size_t i = 0; i < channels.size();i++)
+		for (size_t i = 0; i < channels.size(); i++)
 		{
-			if(channels[i].GetName() == channel_name)
+			if (channels[i].GetName() == channel_name)
 			{
-				if(channels[i].is_private == 1)
+				if (channels[i].is_private == 1)
 					return 1;
 				else
 					return 0;
@@ -127,9 +137,9 @@ public:
 	}
 	std ::string get_channel_key(std::string channel_name)
 	{
-		for(size_t i = 0; i < channels.size();i++)
+		for (size_t i = 0; i < channels.size(); i++)
 		{
-			if(channels[i].GetName() == channel_name)
+			if (channels[i].GetName() == channel_name)
 			{
 				return channels[i].GetKey();
 			}
@@ -138,9 +148,9 @@ public:
 	}
 	void remove_client_from_channels(Client &client)
 	{
-		for(size_t i = 0; i < channels.size();i++)
+		for (size_t i = 0; i < channels.size(); i++)
 		{
-			if(channels[i].client_exist(client))
+			if (channels[i].client_exist(client))
 			{
 				channels[i].remove_client(client);
 			}
@@ -148,11 +158,11 @@ public:
 	}
 	int channel_need_inv(std::string channel_name)
 	{
-		for(size_t i = 0; i < channels.size();i++)
+		for (size_t i = 0; i < channels.size(); i++)
 		{
-			if(channels[i].GetName() == channel_name)
+			if (channels[i].GetName() == channel_name)
 			{
-				if(channels[i].is_invited == 1)
+				if (channels[i].is_invited == 1)
 					return 1;
 				else
 					return 0;
@@ -162,11 +172,11 @@ public:
 	}
 	int is_invitd(std::string channel_name, Client &client)
 	{
-		for(size_t i = 0; i < channels.size();i++)
+		for (size_t i = 0; i < channels.size(); i++)
 		{
-			if(channels[i].GetName() == channel_name)
+			if (channels[i].GetName() == channel_name)
 			{
-				if(channels[i].if_invited(client))
+				if (channels[i].if_invited(client))
 					return 1;
 				else
 					return 0;
@@ -176,9 +186,9 @@ public:
 	}
 	void add_client_as_channel_admin(std::string channel_name, Client &client)
 	{
-		for(size_t i = 0; i < channels.size();i++)
+		for (size_t i = 0; i < channels.size(); i++)
 		{
-			if(channels[i].GetName() == channel_name)
+			if (channels[i].GetName() == channel_name)
 			{
 				channels[i].add_client_as_admin(client);
 				return;
@@ -187,9 +197,9 @@ public:
 	}
 	void set_channel_invite(std::string channel_name, int i)
 	{
-		for(size_t j = 0; j < channels.size();j++)
+		for (size_t j = 0; j < channels.size(); j++)
 		{
-			if(channels[j].GetName() == channel_name)
+			if (channels[j].GetName() == channel_name)
 			{
 				channels[j].is_invited = i;
 				return;
@@ -198,9 +208,9 @@ public:
 	}
 	void set_channel_topic(std::string channel_name, int i)
 	{
-		for(size_t j = 0; j < channels.size();j++)
+		for (size_t j = 0; j < channels.size(); j++)
 		{
-			if(channels[j].GetName() == channel_name)
+			if (channels[j].GetName() == channel_name)
 			{
 				channels[j].topic_restricted = i;
 				return;
@@ -209,11 +219,11 @@ public:
 	}
 	int client_isAdmin(std::string channel_name, Client &client)
 	{
-		for(size_t i = 0; i < channels.size();i++)
+		for (size_t i = 0; i < channels.size(); i++)
 		{
-			if(channels[i].GetName() == channel_name)
+			if (channels[i].GetName() == channel_name)
 			{
-				if(channels[i].client_is_admin(client))
+				if (channels[i].client_is_admin(client))
 					return 1;
 				else
 					return 0;
@@ -223,9 +233,9 @@ public:
 	}
 	void set_channel_limit(std::string channel_name, int limit)
 	{
-		for(size_t j = 0; j < channels.size();j++)
+		for (size_t j = 0; j < channels.size(); j++)
 		{
-			if(channels[j].GetName() == channel_name)
+			if (channels[j].GetName() == channel_name)
 			{
 				channels[j].SetLimit(limit);
 				channels[j].is_limited = 1;
@@ -235,9 +245,9 @@ public:
 	}
 	void remove_channel_limit(std::string channel_name)
 	{
-		for(size_t j = 0; j < channels.size();j++)
+		for (size_t j = 0; j < channels.size(); j++)
 		{
-			if(channels[j].GetName() == channel_name)
+			if (channels[j].GetName() == channel_name)
 			{
 				channels[j].is_limited = 0;
 				return;
@@ -246,9 +256,9 @@ public:
 	}
 	void set_channel_key(std::string channel_name, std::string key)
 	{
-		for(size_t j = 0; j < channels.size();j++)
+		for (size_t j = 0; j < channels.size(); j++)
 		{
-			if(channels[j].GetName() == channel_name)
+			if (channels[j].GetName() == channel_name)
 			{
 				channels[j].is_private = 1;
 				channels[j].Setkey(key);
@@ -258,9 +268,9 @@ public:
 	}
 	void remove_channel_key(std::string channel_name)
 	{
-		for(size_t j = 0; j < channels.size();j++)
+		for (size_t j = 0; j < channels.size(); j++)
 		{
-			if(channels[j].GetName() == channel_name)
+			if (channels[j].GetName() == channel_name)
 			{
 				channels[j].is_private = 0;
 				return;
@@ -269,9 +279,9 @@ public:
 	}
 	Client *GetClientInChannel(std::string channel_name)
 	{
-		for(size_t i = 0; i < channels.size();i++)
+		for (size_t i = 0; i < channels.size(); i++)
 		{
-			if(channels[i].GetName() == channel_name)
+			if (channels[i].GetName() == channel_name)
 			{
 				return channels[i].GetClient(channel_name);
 			}
@@ -280,11 +290,11 @@ public:
 	}
 	int clientAdmin(std::string channel_name, Client &client)
 	{
-		for(size_t i = 0; i < channels.size();i++)
+		for (size_t i = 0; i < channels.size(); i++)
 		{
-			if(channels[i].GetName() == channel_name)
+			if (channels[i].GetName() == channel_name)
 			{
-				if(channels[i].client_is_admin(client))
+				if (channels[i].client_is_admin(client))
 					return 1;
 				else
 					return 0;
@@ -294,9 +304,9 @@ public:
 	}
 	void remove_client_as_channel_admin(std::string channel_name, Client &client)
 	{
-		for(size_t i = 0; i < channels.size();i++)
+		for (size_t i = 0; i < channels.size(); i++)
 		{
-			if(channels[i].GetName() == channel_name)
+			if (channels[i].GetName() == channel_name)
 			{
 				channels[i].remove_client_as_admin(client);
 				return;
@@ -305,15 +315,15 @@ public:
 	}
 	int limit(std::string channel_name)
 	{
-		for(size_t i = 0; i < channels.size();i++)
+		for (size_t i = 0; i < channels.size(); i++)
 		{
-			if(channels[i].GetName() == channel_name)
+			if (channels[i].GetName() == channel_name)
 			{
 				int limit = channels[i].GetMaxUsers();
 				int size = channels[i].get_size();
-				if(channels[i].is_limited == 1)
+				if (channels[i].is_limited == 1)
 				{
-					if(size >= limit)
+					if (size >= limit)
 						return 1;
 					return 0;
 				}
@@ -322,8 +332,6 @@ public:
 		}
 		return 0;
 	}
-
 };
-
 
 #endif
