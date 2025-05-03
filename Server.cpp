@@ -207,7 +207,7 @@ void Server::processCommand(char *buffer, std::string &command, int fd, size_t i
 		{
 			std::vector<std::string> errParams;
 			errParams.push_back("No nickname given");
-			sendNumericReply(fd, ERR_NONICKNAMEGIVEN, "*", errParams);
+			sendNumericReply(fd, ERR_NONICKNAMEGIVEN, client->getNickName().empty() ? "*" : client->getNickName(), errParams);
 			return;
 		}
 
@@ -227,7 +227,7 @@ void Server::processCommand(char *buffer, std::string &command, int fd, size_t i
 			std::vector<std::string> errParams;
 			errParams.push_back(nickname);
 			errParams.push_back("Nickname is already in use");
-			sendNumericReply(fd, ERR_NICKNAMEINUSE, "*", errParams);
+			sendNumericReply(fd, ERR_NICKNAMEINUSE, client->getNickName().empty() ? "*" : client->getNickName(), errParams);
 			return;
 		}
 
