@@ -262,7 +262,7 @@ void Server::processCommand(char *buffer, std::string &command, int fd, size_t i
 			std::vector<std::string> errParams;
 			errParams.push_back("USER");
 			errParams.push_back("Not enough parameters");
-			sendNumericReply(fd, ERR_NEEDMOREPARAMS, "*", errParams);
+			sendNumericReply(fd, ERR_NEEDMOREPARAMS, client->getNickName().empty() ? "*" : client->getNickName(), errParams);
 			return;
 		}
 
@@ -297,7 +297,7 @@ void Server::processCommand(char *buffer, std::string &command, int fd, size_t i
 			{
 				std::vector<std::string> params;
 				params.push_back("Password incorrect");
-				sendNumericReply(fd, ERR_PASSWDMISMATCH, "*", params);
+				sendNumericReply(fd, ERR_PASSWDMISMATCH, client->getNickName().empty() ? "*" : client->getNickName(), params);
 				return;
 			}
 		}
@@ -306,7 +306,7 @@ void Server::processCommand(char *buffer, std::string &command, int fd, size_t i
 			std::vector<std::string> params;
 			params.push_back("PASS");
 			params.push_back("Not enough parameters");
-			sendNumericReply(fd, ERR_NEEDMOREPARAMS, "*", params);
+			sendNumericReply(fd, ERR_NEEDMOREPARAMS, client->getNickName().empty() ? "*" : client->getNickName(), params);
 		}
 	}
 	else if (cmd == "PING")
