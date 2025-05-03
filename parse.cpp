@@ -14,13 +14,6 @@ std::vector<std::string>	Split(std::string recvmessage)
     }
 	return(partsCmd);
 }
-int parse::cmd_lenght(std::string str)
-{
-    int i = 0;
-    while(str[i] && str[i] != ' ')
-        i++;
-    return i;
-}
 
 
 void parse::execute_cmd(std::string cmd, std::string arg, Server *server, Client &client)
@@ -61,8 +54,13 @@ void parse::execute_cmd(std::string cmd, std::string arg, Server *server, Client
 
 parse::parse(std::string buff, Server* server, Client &client)
 {
-    int len = cmd_lenght(buff);
-    cmd = buff.substr(0, len);
-    arg = buff.substr(len + 1);
+    std::vector<std::string> partsCmd = Split(buff);
+    cmd = partsCmd[0];
+    if(partsCmd.size() > 1)
+    {
+        arg = buff.substr(cmd.size() + 1);
+    }
+    else
+        arg = "";
     execute_cmd(cmd, arg, server, client);
 }
