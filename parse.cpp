@@ -53,7 +53,7 @@ void parse::execute_cmd(std::string cmd, std::string arg, Server *server, Client
         return;
     else
     {
-        client.sendMessage("Unknown command");
+        client.sendMessage("421 " + client.getNickName() + " " + cmd + " :Unknown command\n");
     }
 }
 

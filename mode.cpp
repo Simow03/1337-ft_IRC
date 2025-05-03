@@ -9,30 +9,30 @@ void parse::execute_mode(std::string arg, Server *server, Client &client)
 
 	if(arg.empty())
 	{
-		client.sendMessage("461 MODE :Not enough parameters\n");
+		client.sendMessage("461 MODE :Not enough parameters\r\n");
 		return;
 	}
 	std::vector<std::string> partsCmd = Split(arg);
 	if(partsCmd.empty() || partsCmd.size() < 2)
 	{
-		client.sendMessage("461 MODE :Not enough parameters\n");
+		client.sendMessage("461 MODE :Not enough parameters\r\n");
 		return;
 	}
 	if(!server->channel_exist(partsCmd[0]))
 	{
-		client.sendMessage("403 " + channel_name + " :No such channel\n");
+		client.sendMessage("403 " + channel_name + " :No such channel\r\n");
 		return;
 	}
 	channel_name = partsCmd[0];
 	mode = partsCmd[1];
 	if(server->client_exist(channel_name, client) == 0)
 	{
-		client.sendMessage("442 " + channel_name + " :You're not on that channel\n");
+		client.sendMessage("442 " + channel_name + " :You're not on that channel\r\n");
 		return;
 	}
 	if(server->client_isAdmin(channel_name, client) == 0)
 	{
-		client.sendMessage("482 " + channel_name + " :You're not channel operator\n");
+		client.sendMessage("482 " + channel_name + " :You're not channel operator\r\n");
 		return;
 	}
 	for(size_t i = 0; i < mode.size(); i++)
@@ -58,7 +58,7 @@ void parse::execute_mode(std::string arg, Server *server, Client &client)
 					Client *temp = server->GetClientInChannel(channel_name, client_name);
 					if (temp == NULL)
 					{
-						client.sendMessage("401 " + client_name + " :No such nick/channel\n");
+						client.sendMessage("401 " + client_name + " :No such nick/channel\r\n");
 						pos++;
 						continue;
 					}
@@ -72,7 +72,7 @@ void parse::execute_mode(std::string arg, Server *server, Client &client)
 				}
 				else
 				{
-					client.sendMessage("461 MODE o :Operator mode requires a nickname\n");
+					client.sendMessage("461 MODE o :Operator mode requires a nickname\r\n");
 					continue;
 				}
 			}
@@ -115,7 +115,7 @@ void parse::execute_mode(std::string arg, Server *server, Client &client)
 				}
 				else
 				{
-					client.sendMessage("461 MODE k :Key mode requires a parameter\n");
+					client.sendMessage("461 MODE k :Key mode requires a parameter\r\n");
 					continue;
 				}
 			}
@@ -146,7 +146,7 @@ void parse::execute_mode(std::string arg, Server *server, Client &client)
 				}
 				else
 				{
-					client.sendMessage("461 MODE l :Limit mode requires a number\n");
+					client.sendMessage("461 MODE l :Limit mode requires a number\r\n");
 					continue;
 				}
 			}
@@ -157,7 +157,7 @@ void parse::execute_mode(std::string arg, Server *server, Client &client)
 		}
 		else
 		{
-			client.sendMessage("472 " + std::string(1, mode[i]) + " :is unknown mode char to me\n");
+			client.sendMessage("472 " + std::string(1, mode[i]) + " :is unknown mode char to me\r\n");
 			return;
 		}
 		std::string prefix = ":" + client.getNickName() + "!" + client.getUserName() + "@localhost";
@@ -166,7 +166,7 @@ void parse::execute_mode(std::string arg, Server *server, Client &client)
 		{
 			finalMsg += " " + mode;
 		}
-		finalMsg += "\n";
+		finalMsg += "\r\n";
 
 		std::vector<Client *> members = server->get_clients_in_channel(channel_name);
 		for (size_t i = 0; i < members.size(); ++i)
