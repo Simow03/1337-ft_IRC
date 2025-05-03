@@ -25,21 +25,6 @@
 #define BUFFER_SIZE 1024
 extern bool g_running;
 
-#define RPL_WELCOME "001"
-#define RPL_YOURHOST "002"
-#define RPL_CREATED "003"
-#define RPL_MYINFO "004"
-#define RPL_ISUPPORT "005"
-#define RPL_MOTDSTART "375"
-#define RPL_MOTD "372"
-#define RPL_ENDOFMOTD "376"
-#define ERR_UNKNOWNCOMMAND "421"
-#define ERR_NONICKNAMEGIVEN "431"
-#define ERR_NICKNAMEINUSE "433"
-#define ERR_NEEDMOREPARAMS "461"
-#define ERR_PASSWDMISMATCH "464"
-#define ERR_NOTREGISTERED "451"
-
 #define RED "\033[31m"
 #define BOLD "\033[1m"
 #define UNDERLINE "\033[4m"

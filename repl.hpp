@@ -4,6 +4,22 @@
 #define POSTFIX "\r\n"
 
 //Errors :
+
+#define RPL_WELCOME_N "001"
+#define RPL_YOURHOST_N "002"
+#define RPL_CREATED_N "003"
+#define RPL_MYINFO_N "004"
+#define RPL_ISUPPORT_N "005"
+#define RPL_MOTDSTART_N "375"
+#define RPL_MOTD_N "372"
+#define RPL_ENDOFMOTD_N "376"
+#define ERR_UNKNOWNCOMMAND_N "421"
+#define ERR_NONICKNAMEGIVEN_N "431"
+#define ERR_NICKNAMEINUSE_N "433"
+#define ERR_NEEDMOREPARAMS_N "461"
+#define ERR_PASSWDMISMATCH_N "464"
+#define ERR_NOTREGISTERED_N "451"
+
 #define ERR_NICKNAMEINUSE(target)						PREFIX "433 " + target + " :Nickname is already in use" POSTFIX
 #define ERR_NEEDMOREPARAMS(command)						PREFIX "461 " + command + " :Not enough parameters" POSTFIX
 #define ERR_UNKNOWNCOMMAND(command)						PREFIX "421 " + command + " :Unknown command" POSTFIX

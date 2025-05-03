@@ -207,7 +207,7 @@ void Server::processCommand(char *buffer, std::string &command, int fd, size_t i
 		{
 			std::vector<std::string> errParams;
 			errParams.push_back("No nickname given");
-			sendNumericReply(fd, ERR_NONICKNAMEGIVEN, client->getNickName().empty() ? "*" : client->getNickName(), errParams);
+			sendNumericReply(fd, ERR_NONICKNAMEGIVEN_N, client->getNickName().empty() ? "*" : client->getNickName(), errParams);
 			return;
 		}
 
@@ -227,7 +227,7 @@ void Server::processCommand(char *buffer, std::string &command, int fd, size_t i
 			std::vector<std::string> errParams;
 			errParams.push_back(nickname);
 			errParams.push_back("Nickname is already in use");
-			sendNumericReply(fd, ERR_NICKNAMEINUSE, client->getNickName().empty() ? "*" : client->getNickName(), errParams);
+			sendNumericReply(fd, ERR_NICKNAMEINUSE_N, client->getNickName().empty() ? "*" : client->getNickName(), errParams);
 			return;
 		}
 
@@ -262,7 +262,7 @@ void Server::processCommand(char *buffer, std::string &command, int fd, size_t i
 			std::vector<std::string> errParams;
 			errParams.push_back("USER");
 			errParams.push_back("Not enough parameters");
-			sendNumericReply(fd, ERR_NEEDMOREPARAMS, client->getNickName().empty() ? "*" : client->getNickName(), errParams);
+			sendNumericReply(fd, ERR_NEEDMOREPARAMS_N, client->getNickName().empty() ? "*" : client->getNickName(), errParams);
 			return;
 		}
 
@@ -297,7 +297,7 @@ void Server::processCommand(char *buffer, std::string &command, int fd, size_t i
 			{
 				std::vector<std::string> params;
 				params.push_back("Password incorrect");
-				sendNumericReply(fd, ERR_PASSWDMISMATCH, client->getNickName().empty() ? "*" : client->getNickName(), params);
+				sendNumericReply(fd, ERR_PASSWDMISMATCH_N, client->getNickName().empty() ? "*" : client->getNickName(), params);
 				return;
 			}
 		}
@@ -306,7 +306,7 @@ void Server::processCommand(char *buffer, std::string &command, int fd, size_t i
 			std::vector<std::string> params;
 			params.push_back("PASS");
 			params.push_back("Not enough parameters");
-			sendNumericReply(fd, ERR_NEEDMOREPARAMS, client->getNickName().empty() ? "*" : client->getNickName(), params);
+			sendNumericReply(fd, ERR_NEEDMOREPARAMS_N, client->getNickName().empty() ? "*" : client->getNickName(), params);
 		}
 	}
 	else if (cmd == "PING")
@@ -330,7 +330,7 @@ void Server::processCommand(char *buffer, std::string &command, int fd, size_t i
 			std::vector<std::string> params;
 			params.push_back(cmd);
 			params.push_back("You must complete registration first");
-			sendNumericReply(fd, ERR_NOTREGISTERED, "*", params);
+			sendNumericReply(fd, ERR_NOTREGISTERED_N, "*", params);
 			return;
 		}
 		else if (!client->getIsAuthenticated())
@@ -338,7 +338,7 @@ void Server::processCommand(char *buffer, std::string &command, int fd, size_t i
 			std::vector<std::string> params;
 			params.push_back(cmd);
 			params.push_back("You must complete registration first");
-			sendNumericReply(fd, ERR_NOTREGISTERED, client->getNickName().empty() ? "*" : client->getNickName(), params);
+			sendNumericReply(fd, ERR_NOTREGISTERED_N, client->getNickName().empty() ? "*" : client->getNickName(), params);
 			return;
 		}
 		else
@@ -438,15 +438,15 @@ void Server::sendWelcomeMessage(int fd, std::string nickname)
 	std::vector<std::string> params;
 
 	params.push_back("Welcome to the IRC Network " + nickname + "!");
-	sendNumericReply(fd, RPL_WELCOME, nickname, params);
+	sendNumericReply(fd, RPL_WELCOME_N, nickname, params);
 
 	params.clear();
 	params.push_back("Your host is IRC.localhost, running version 1.0");
-	sendNumericReply(fd, RPL_YOURHOST, nickname, params);
+	sendNumericReply(fd, RPL_YOURHOST_N, nickname, params);
 
 	params.clear();
 	params.push_back("This server was created April 2025");
-	sendNumericReply(fd, RPL_CREATED, nickname, params);
+	sendNumericReply(fd, RPL_CREATED_N, nickname, params);
 
 	params.clear();
 	params.push_back("IRC.localhost");
@@ -456,7 +456,7 @@ void Server::sendWelcomeMessage(int fd, std::string nickname)
 	params.push_back("k");
 	params.push_back("o");
 	params.push_back("l");
-	sendNumericReply(fd, RPL_MYINFO, nickname, params);
+	sendNumericReply(fd, RPL_MYINFO_N, nickname, params);
 
 	params.clear();
 	params.push_back("CHANNELLEN=");
@@ -465,19 +465,19 @@ void Server::sendWelcomeMessage(int fd, std::string nickname)
 	params.push_back("PREFIX=");
 	params.push_back("CHANMODES=i,t,k,o,l");
 	params.push_back("are supported by this server");
-	sendNumericReply(fd, RPL_ISUPPORT, nickname, params);
+	sendNumericReply(fd, RPL_ISUPPORT_N, nickname, params);
 
 	params.clear();
 	params.push_back("- Message of the Day -");
-	sendNumericReply(fd, RPL_MOTDSTART, nickname, params);
+	sendNumericReply(fd, RPL_MOTDSTART_N, nickname, params);
 
 	params.clear();
 	params.push_back("- Welcome to the IRC server!");
-	sendNumericReply(fd, RPL_MOTD, nickname, params);
+	sendNumericReply(fd, RPL_MOTD_N, nickname, params);
 
 	params.clear();
 	params.push_back("- End of MOTD");
-	sendNumericReply(fd, RPL_ENDOFMOTD, nickname, params);
+	sendNumericReply(fd, RPL_ENDOFMOTD_N, nickname, params);
 }
 
 Server::~Server()
