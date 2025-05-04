@@ -38,7 +38,8 @@ void parse::execute_privmsg(std::string arg, Server *server, Client &client)
 	}
 	if(isChannel)
 	{
-		server->sendMessageToChannel(target, message);
+		std::string msg = ":" + client.getNickName() + "!" + client.getUserName() + " PRIVMSG " + target + " :" + message;
+		server->sendMessageToChannel(target, msg + "\r\n");
 		return;
 	}
 	Client *temp = server->GetClientInServer(target);
