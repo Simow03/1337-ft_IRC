@@ -119,12 +119,8 @@ void parse::execute_join(std::string arg, Server *server, Client &client)
                 server->add_channel(channels[j]);
                 server->add_client_as_channel_admin(channels[j], client);
                 server->add_client_to_channel(channels[j], client);
-                // client.sendMessage("JOIN " + channels[j] + "\n");
-                std::vector<Client *> members = server->get_clients_in_channel(channels[j]);
-		        for (size_t i = 0; i < members.size(); ++i)
-		        {
-			        members[i]->sendMessage(":" + client.getNickName() + "!" + client.getUserName() + "@localhost JOIN " + channels[j] + "\r\n");
-                }
+                client.sendMessage(":" + client.getNickName() + "!" + client.getUserName() + "@localhost JOIN " + channels[j] + "\r\n");
+                execute_mode(channels[j] + "-i", server, client);
             }
         }
         j++;
