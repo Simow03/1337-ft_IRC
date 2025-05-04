@@ -62,8 +62,9 @@ void parse::execute_mode(std::string arg, Server *server, Client &client)
 						pos++;
 						continue;
 					}
-					if(server->clientAdmin(channel_name, *temp) == 0)
+					if(server->clientAdmin(channel_name, *temp) == 1)
 					{
+						client.sendMessage("491 " + client_name + " :They are already channel operator\r\n");
 						pos++;
 						continue;
 					}
@@ -161,7 +162,7 @@ void parse::execute_mode(std::string arg, Server *server, Client &client)
 			return;
 		}
 		std::string prefix = ":" + client.getNickName() + "!" + client.getUserName() + "@localhost";
-		std::string finalMsg = prefix + " MODE " + channel_name + " " + mode;
+		std::string finalMsg = prefix + " MODE " + channel_name + " ";
 		if (!mode.empty())
 		{
 			finalMsg += " " + mode;

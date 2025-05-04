@@ -63,7 +63,7 @@ public:
 	void acceptNewConnection(void);
 	bool receiveClientData(size_t i);
 	void disconnectClient(size_t i);
-	void processCommand(char *buffer, std::string &command, int fd, size_t i);
+	void processCommand(std::string &command, int fd, size_t i);
 	// void authenticateClient(std::string& command, int fd);
 	void sendIRCReply(int fd, const std::string &prefix, const std::string &command, const std::vector<std::string> &params);
 	void sendNumericReply(int fd, const std::string &numeric, const std::string &nickname, const std::vector<std::string> &params);

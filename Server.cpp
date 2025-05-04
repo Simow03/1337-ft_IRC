@@ -165,18 +165,18 @@ bool Server::receiveClientData(size_t i)
 		command = message.substr(0, pos);
 		message.erase(0, pos + (message[pos] == '\r' ? 2 : 1));
 		if (!command.empty()) {
-			processCommand(buffer, command, fd, i);
+			processCommand(command, fd, i);
 		}
 	}
 
 	if (!message.empty()) {
-		processCommand(buffer, message, fd, i);
+		processCommand(message, fd, i);
 	}
 
 	return true;
 }
 
-void Server::processCommand(char *buffer, std::string &command, int fd, size_t i)
+void Server::processCommand(std::string &command, int fd, size_t i)
 {
 
 	std::cout << CYAN << "\nclient " << fd << ": " << RESET << command << std::endl;
@@ -256,7 +256,7 @@ void Server::processCommand(char *buffer, std::string &command, int fd, size_t i
 	{
 		std::string username;
 		iss >> username;
-	
+
 		if (username.empty())
 		{
 			std::vector<std::string> errParams;
@@ -347,7 +347,7 @@ void Server::processCommand(char *buffer, std::string &command, int fd, size_t i
 			if (ircBot->isBotCommand(command))
 				ircBot->processCommand(command, *client, fd);
 
-			parse handl(buffer, this, *client);
+			parse handl(command, this, *client);
 		}
 	}
 }

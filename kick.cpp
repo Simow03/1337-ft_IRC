@@ -11,7 +11,20 @@ void parse::execute_kick(std::string arg, Server *server, Client &client)
 	}
 	std::string channel = partsCmd[0];
 	std::string target = partsCmd[1];
-	std ::string reason = partsCmd.size() > 2 ? partsCmd[2] : "No reason given";
+	std ::string reason ;
+	if (partsCmd.size() > 2)
+	{
+		for (size_t i = 2; i < partsCmd.size(); ++i)
+		{
+			reason += partsCmd[i];
+			if (i != partsCmd.size() - 1)
+				reason += " ";
+		}
+	}
+	else
+	{
+		reason = "No reason given";
+	}
 
 	if(!server->channel_exist(channel))
 	{
