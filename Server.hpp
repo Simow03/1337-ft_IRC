@@ -428,6 +428,16 @@ public:
 		}
 		return std::vector<Client *>();
 	}
+	std::vector<std::string> get_channels(Client c)
+	{
+		std::vector<std::string> channels_names;
+		for(size_t i = 0; i < channels.size();i++)
+		{
+			if(client_exist(channels[i].GetName(),c))
+				channels_names.push_back(channels[i].GetName());
+		}
+		return channels_names;
+	}
 
 
 };

@@ -33,7 +33,7 @@ Server::Server(int _port, std::string &_password) : port(_port), password(_passw
 		pollfds.events = POLLIN;
 		clientfds.push_back(pollfds);
 
-		ircBot = new Bot("IRC_BOT", "BOT !");
+		ircBot = new Bot("IRC_BOT", "BOT");
 
 		std::cout << YELLOW << BOLD << "\n\t. . . Waiting for connections . . .\n"
 				  << RESET << std::endl;
@@ -92,7 +92,8 @@ void Server::runServer()
 				if (clientfds[i].revents & (POLLHUP | POLLERR | POLLNVAL))
 				{
 					int fd = clientfds[i].fd;
-					if (newlyConnectedClients.find(fd) != newlyConnectedClients.end()) {
+					if (newlyConnectedClients.find(fd) != newlyConnectedClients.end())
+					{
 						newlyConnectedClients.erase(fd);
 						continue;
 					}
@@ -146,8 +147,10 @@ bool Server::receiveClientData(size_t i)
 	int fd = clientfds[i].fd;
 	int received = recv(fd, buffer, sizeof(buffer) - 1, 0);
 
-	if (received < 0) {
-		if (errno == EWOULDBLOCK || errno == EAGAIN) {
+	if (received < 0)
+	{
+		if (errno == EWOULDBLOCK || errno == EAGAIN)
+		{
 			return true;
 		}
 
@@ -164,12 +167,14 @@ bool Server::receiveClientData(size_t i)
 	{
 		command = message.substr(0, pos);
 		message.erase(0, pos + (message[pos] == '\r' ? 2 : 1));
-		if (!command.empty()) {
+		if (!command.empty())
+		{
 			processCommand(command, fd, i);
 		}
 	}
 
-	if (!message.empty()) {
+	if (!message.empty())
+	{
 		processCommand(message, fd, i);
 	}
 
@@ -178,7 +183,6 @@ bool Server::receiveClientData(size_t i)
 
 void Server::processCommand(std::string &command, int fd, size_t i)
 {
-
 	std::cout << CYAN << "\nclient " << fd << ": " << RESET << command << std::endl;
 
 	std::stringstream iss(command);
@@ -203,11 +207,13 @@ void Server::processCommand(std::string &command, int fd, size_t i)
 		std::string nickname;
 		iss >> nickname;
 
-		if (nickname.empty())
+		std::cout << nickname << std::endl;
+
+		if (nickname.empty() || nickname == ":")
 		{
 			std::vector<std::string> errParams;
 			errParams.push_back("No nickname given");
-			sendNumericReply(fd, ERR_NONICKNAMEGIVEN_N, client->getNickName().empty() ? "*" : client->getNickName(), errParams);
+			sendNumericReply(fd, ERR_NONICKNAMEGIVEN_N, clientFound ? (client->getNickName().empty() ? "*" : client->getNickName()) : "*", errParams);
 			return;
 		}
 
@@ -227,30 +233,48 @@ void Server::processCommand(std::string &command, int fd, size_t i)
 			std::vector<std::string> errParams;
 			errParams.push_back(nickname);
 			errParams.push_back("Nickname is already in use");
-			sendNumericReply(fd, ERR_NICKNAMEINUSE_N, client->getNickName().empty() ? "*" : client->getNickName(), errParams);
+			sendNumericReply(fd, ERR_NICKNAMEINUSE_N, clientFound ? (client->getNickName().empty() ? "*" : client->getNickName()) : "*", errParams);
 			return;
 		}
 
-		if (clientFound) {
+		if (clientFound)
+		{
+			std::vector<std::string> params;
+			std::string oldNickname = client->getNickName();
 			client->setNickName(nickname);
 
-			if (!client->getUserName().empty() && !client->getIsAuthenticated()) {
+			std::string nickChangeMsg = ":" + oldNickname + "!" + client->getUserName() + "@" + client->getIpAddress() + " NICK :" + nickname + "\r\n";
+
+			std::vector<std::string> client_channels = get_channels(*client);
+			for (size_t i = 0; i < client_channels.size(); i++)
+			{
+				std::vector<Client *> members = get_clients_in_channel(client_channels[i]);
+				for (size_t i = 0; i < members.size(); ++i)
+				{
+					members[i]->sendMessage(nickChangeMsg);
+				}
+			}
+
+			send(fd, nickChangeMsg.c_str(), nickChangeMsg.size(), 0);
+
+			if (!client->getUserName().empty() && !client->getIsAuthenticated())
+			{
 				client->setIsAuthenticated(true);
 				sendWelcomeMessage(fd, nickname);
 
 				std::cout << GREEN << BOLD << "\nclient " << fd << " authenticated successfuly!\n"
-				  << RESET << std::endl;
+						  << RESET << std::endl;
 			}
 		}
-		else {
+		else
+		{
 			std::string ipStr = inet_ntoa(ca.sin_addr);
 			std::string tempUsername = "";
 			Client newClient(fd, ipStr, nickname, tempUsername, false, false);
 			clients.push_back(newClient);
 			std::cout << GREEN << BOLD << "\nclient " << fd << " added with nickname : " << nickname << "!\n"
-				  << RESET << std::endl;
+					  << RESET << std::endl;
 		}
-
 	}
 	else if (cmd == "USER")
 	{
@@ -262,29 +286,31 @@ void Server::processCommand(std::string &command, int fd, size_t i)
 			std::vector<std::string> errParams;
 			errParams.push_back("USER");
 			errParams.push_back("Not enough parameters");
-			sendNumericReply(fd, ERR_NEEDMOREPARAMS_N, client->getNickName().empty() ? "*" : client->getNickName(), errParams);
+			sendNumericReply(fd, ERR_NEEDMOREPARAMS_N, clientFound ? (client->getNickName().empty() ? "*" : client->getNickName()) : "*", errParams);
 			return;
 		}
 
-		if (clientFound) {
+		if (clientFound)
+		{
 			client->setUserName(username);
 
-			if (!client->getNickName().empty() && !client->getIsAuthenticated()) {
+			if (!client->getNickName().empty() && !client->getIsAuthenticated())
+			{
 				client->setIsAuthenticated(true);
 				sendWelcomeMessage(fd, client->getNickName());
 				std::cout << GREEN << BOLD << "\nclient " << fd << " authenticated successfuly!\n"
-				  << RESET << std::endl;
+						  << RESET << std::endl;
 			}
 		}
-		else {
+		else
+		{
 			std::string ipStr = inet_ntoa(ca.sin_addr);
 			std::string tempNickname = "";
 			Client newClient(fd, ipStr, tempNickname, username, false, false);
 			clients.push_back(newClient);
 			std::cout << GREEN << BOLD << "\nclient " << fd << " added with username : " << username << "!\n"
-				  << RESET << std::endl;
+					  << RESET << std::endl;
 		}
-
 	}
 	else if (cmd == "PASS")
 	{
@@ -297,7 +323,7 @@ void Server::processCommand(std::string &command, int fd, size_t i)
 			{
 				std::vector<std::string> params;
 				params.push_back("Password incorrect");
-				sendNumericReply(fd, ERR_PASSWDMISMATCH_N, client->getNickName().empty() ? "*" : client->getNickName(), params);
+				sendNumericReply(fd, ERR_PASSWDMISMATCH_N, clientFound ? (client->getNickName().empty() ? "*" : client->getNickName()) : "*", params);
 				return;
 			}
 		}
@@ -306,10 +332,10 @@ void Server::processCommand(std::string &command, int fd, size_t i)
 			std::vector<std::string> params;
 			params.push_back("PASS");
 			params.push_back("Not enough parameters");
-			sendNumericReply(fd, ERR_NEEDMOREPARAMS_N, client->getNickName().empty() ? "*" : client->getNickName(), params);
+			sendNumericReply(fd, ERR_NEEDMOREPARAMS_N, clientFound ? (client->getNickName().empty() ? "*" : client->getNickName()) : "*", params);
 		}
 	}
-	else if (cmd == "PING")
+	else if (cmd == "PING" || cmd == "PONG")
 	{
 		std::string extraParam;
 		iss >> extraParam;
@@ -338,7 +364,7 @@ void Server::processCommand(std::string &command, int fd, size_t i)
 			std::vector<std::string> params;
 			params.push_back(cmd);
 			params.push_back("You must complete registration first");
-			sendNumericReply(fd, ERR_NOTREGISTERED_N, client->getNickName().empty() ? "*" : client->getNickName(), params);
+			sendNumericReply(fd, ERR_NOTREGISTERED_N, clientFound ? (client->getNickName().empty() ? "*" : client->getNickName()) : "*", params);
 			return;
 		}
 		else
