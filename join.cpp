@@ -120,7 +120,7 @@ void parse::execute_join(std::string arg, Server *server, Client &client)
                 server->add_client_as_channel_admin(channels[j], client);
                 server->add_client_to_channel(channels[j], client);
                 client.sendMessage(":" + client.getNickName() + "!" + client.getUserName() + "@localhost JOIN " + channels[j] + "\r\n");
-                execute_mode(channels[j] + "-i", server, client);
+                execute_mode(channels[j] + " -i", server, client);
             }
         }
         j++;
