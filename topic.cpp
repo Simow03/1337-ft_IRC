@@ -30,21 +30,21 @@ void parse::execute_topic(std::string arg, Server *server, Client &client)
 		std ::string topic = server->GetTopic(channel_name);
 		if (topic == "")
 		{
-			client.sendMessage("331 " + client.getNickName() + " " + channel_name + " :No topic is set\r\n");
+			client.sendMessage("332 " + client.getNickName() + " " + channel_name + " :No topic is set\r\n");
 			return;
 		}
-		client.sendMessage("IRCServer 332 " + client.getNickName() + " " + channel_name + " :" + topic + "\r\n");
+		client.sendMessage("332 " + client.getNickName() + " " + channel_name + " :" + topic + "\r\n");
 	}
 	else
 	{
 		std::string check = partsCmd[1];
-		std::string topic ;
-		if(check == ":")
+		std::string topic = "";
+		if(check[0] == ':')
 		{
 			if(partsCmd.size() == 2)
 			{
 				server->set_topic(channel_name, "");
-				client.sendMessage("IRCServer 332 " + client.getNickName() + " " + channel_name + " :" + "\r\n");
+				client.sendMessage("332 " + client.getNickName() + " " + channel_name + " :" + "\r\n");
 				return;
 			}
 			for(size_t i = 2; i < partsCmd.size(); i++)
@@ -54,11 +54,11 @@ void parse::execute_topic(std::string arg, Server *server, Client &client)
 					topic += " ";
 			}
 			server->set_topic(channel_name, topic);
-			client.sendMessage("IRCServer 332 " + client.getNickName() + " " + channel_name + " :" + topic + "\r\n");
+			client.sendMessage("332 " + client.getNickName() + " " + channel_name + " :" + topic + "\r\n");
 			return;
 		}
 		server->set_topic(channel_name, check);
-		client.sendMessage("IRCServer 332 " + client.getNickName() + " " + channel_name + " :" + check + "\r\n");
+		client.sendMessage("332 " + client.getNickName() + " " + channel_name + " :" + check + "\r\n");
 		return;
 	}
 }

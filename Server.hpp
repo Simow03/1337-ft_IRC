@@ -406,17 +406,18 @@ public:
 			}
 		}
 	}
-	void sendMessageToChannel(std::string channel_name, std::string message)
+	void sendMessageToChannel(std::string channel_name, std::string message , Client &client)
 	{
 		for(size_t i = 0; i < channels.size();i++)
 		{
 			if(channels[i].GetName() == channel_name)
 			{
-				channels[i].sendMessageToAll(message);
+				channels[i].sendMessageToAll(message, client);
 				return;
 			}
 		}
 	}
+
 	std::vector<Client *> get_clients_in_channel(std::string channel_name)
 	{
 		for(size_t i = 0; i < channels.size();i++)

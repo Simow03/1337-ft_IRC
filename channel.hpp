@@ -120,11 +120,12 @@ class channel
         {
             invited.push_back(c);
         }
-        void sendMessageToAll(std::string message)
+        void sendMessageToAll(std::string message , Client &client)
         {
             for(size_t i = 0; i < users.size();i++)
             {
-                users[i].sendMessage(message);
+                if(users[i].getFd() != client.getFd())
+                    users[i].sendMessage(message);
             }
         }
         std::vector<Client *> get_clients()
