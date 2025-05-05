@@ -439,8 +439,6 @@ public:
 		}
 		return channels_names;
 	}
-
-
 };
 
 #endif

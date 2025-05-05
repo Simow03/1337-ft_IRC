@@ -33,7 +33,7 @@ Server::Server(int _port, std::string &_password) : port(_port), password(_passw
 		pollfds.events = POLLIN;
 		clientfds.push_back(pollfds);
 
-		ircBot = new Bot("IRC_BOT", "BOT");
+		ircBot = new Bot("IRC_BOT", "BOT ");
 
 		std::cout << YELLOW << BOLD << "\n\t. . . Waiting for connections . . .\n"
 				  << RESET << std::endl;
@@ -370,8 +370,10 @@ void Server::processCommand(std::string &command, int fd, size_t i)
 		else
 		{
 
-			if (ircBot->isBotCommand(command))
+			if (ircBot->isBotCommand(command)) {
 				ircBot->processCommand(command, *client, fd);
+				return ;
+			}
 
 			parse handl(command, this, *client);
 		}
