@@ -67,9 +67,7 @@ void parse::execute_join(std::string arg, Server *server, Client &client)
                         server->add_client_to_channel(channels[j], client);
                         std::vector<Client *> members = server->get_clients_in_channel(channels[j]);
 		                for (size_t i = 0; i < members.size(); ++i)
-		                {
-			                members[i]->sendMessage(":" + client.getNickName() + "!" + client.getUserName() + "@localhost JOIN " + channels[j] + "\r\n");
-                        }
+			                members[i]->sendMessage(RPL_JOINMSG(client.getHostname(), client.getIpAddress(), channels[j]));
                    }
                    else
                    {
@@ -91,9 +89,7 @@ void parse::execute_join(std::string arg, Server *server, Client &client)
                                 // client.sendMessage("JOIN " + channels[j] + "\n");
                                  std::vector<Client *> members = server->get_clients_in_channel(channels[j]);
 		                        for (size_t i = 0; i < members.size(); ++i)
-		                        {
-			                        members[i]->sendMessage(":" + client.getNickName() + "!" + client.getUserName() + "@localhost JOIN " + channels[j] + "\r\n");
-                                }
+			                        members[i]->sendMessage(RPL_JOINMSG(client.getHostname(), client.getIpAddress(), channels[j]));
                              }
                         }
                         else
@@ -107,20 +103,25 @@ void parse::execute_join(std::string arg, Server *server, Client &client)
                             //  client.sendMessage("JOIN " + channels[j] + "\n");
                                  std::vector<Client *> members = server->get_clients_in_channel(channels[j]);
 		                        for (size_t i = 0; i < members.size(); ++i)
-		                        {
-			                        members[i]->sendMessage(":" + client.getNickName() + "!" + client.getUserName() + "@localhost JOIN " + channels[j] + "\r\n");
-                                }
+			                        members[i]->sendMessage(RPL_JOINMSG(client.getHostname(), client.getIpAddress(), channels[j]));
                         }
                    }
                 }
             }
             else
             {
+        // std::vector<client> channelClients = channel->getClients();
+        // for (std::vector<client>::iterator it = channelClients.begin(); it != channelClients.end(); ++it) {
+        //     sendReponse(RPL_JOINMSG(currentClient.getHostname(), currentClient.getipadd(), channelName), it->getfd());
+        // }
                 server->add_channel(channels[j]);
                 server->add_client_as_channel_admin(channels[j], client);
                 server->add_client_to_channel(channels[j], client);
-                client.sendMessage(":" + client.getNickName() + "!" + client.getUserName() + "@localhost JOIN " + channels[j] + "\r\n");
-                execute_mode(channels[j] + " -i", server, client);
+                // #define RPL_JOINMSG(hostname, ipaddress, channelname)	(":" + hostname + "@" + ipaddress + " JOIN " + channelname + POSTFIX)
+
+                // client.sendMessage(":@"  + client.getNickName() + "!" + client.getUserName() + "@localhost JOIN " + channels[j] + "\r\n");
+                client.sendMessage(RPL_JOINMSG(client.getHostname(), client.getIpAddress(), channels[j]));
+                // execute_mode(channels[j] + " -i", server, client);
             }
         }
         j++;
@@ -134,19 +135,26 @@ void parse::execute_join(std::string arg, Server *server, Client &client)
         }
     }
     // purpose of this is to send the list of clients in the channel
-
     std::vector<Client *> members = server->get_clients_in_channel(channels[0]);
-    std::string client_list = "353 " + client.getNickName() + " = " + channels[0] + " :";
+    std::string client_list ;
+
     for (size_t i = 0; i < members.size(); ++i)
     {
-        client_list += members[i]->getNickName() + " ";
+        if(server->client_isAdmin(channels[0], *members[i]))
+            client_list += "@" + members[i]->getNickName() + " ";
+        else
+            client_list += members[i]->getNickName() + " ";
     }
-    client_list += "\r\n";
-    client.sendMessage(client_list);
-    std::string end_list = "366 " + client.getNickName() + " " + channels[0] + " :End of NAMES list\r\n";
-    client.sendMessage(end_list);
 
+    // client_list += "\r\n";
+    // client.sendMessage(client_list);
+    // std::string end_list = ":ircserv 366 " + client.getNickName() + " " + channels[0] + " :End of NAMES list\r\n";
+    // client.sendMessage(end_list);
+    // std::cout << "=>" << client_list << std::endl;
+    // Names: :ircserv 353 flick = #hahahaha :@flick
 
-
-
+    // Names: :ircserv 353 flick = #hahahaha :@flick
+    //        :ircserv 353 flick = #hahahaha :@flick
+        client.sendMessage(RPL_NAMREPLY(client.getNickName() , channels[0], client_list));
+        client.sendMessage(RPL_ENDOFNAMES(client.getNickName() , channels[0]));
 }

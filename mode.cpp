@@ -15,7 +15,7 @@ void parse::execute_mode(std::string arg, Server *server, Client &client)
 	std::vector<std::string> partsCmd = Split(arg);
 	if(partsCmd.empty() || partsCmd.size() < 2)
 	{
-		client.sendMessage("461 MODE :Not enough parameters\r\n");
+		// client.sendMessage("461 MODE :Not enough parameters\r\n");
 		return;
 	}
 	if(!server->channel_exist(partsCmd[0]))

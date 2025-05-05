@@ -59,6 +59,8 @@ public:
 	void setState(ClientState var);
 
 	void sendMessage(std::string message) const;
+
+	std::string getHostname();
 };
 
 #endif

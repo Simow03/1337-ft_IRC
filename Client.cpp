@@ -81,3 +81,37 @@ ClientState Client::getState(void) const {
 void Client::setState(ClientState var) {
 	state = var;
 };
+
+
+void trimNewline(std::string &str)
+{
+    while (!str.empty() && (str[str.size() - 1] == '\n' || str[str.size() - 1] == '\r'))
+        str.erase(str.size() - 1);
+}
+
+ std::vector<std::string>	Split_(std::string recvmessage)
+{
+	std::vector<std::string> partsCmd;
+
+	std::istringstream stream(recvmessage);
+
+    std::string part;
+
+	while (stream >> part)
+    {
+        partsCmd.push_back(part);
+    }
+	return(partsCmd);
+}
+
+
+std::string Client::getHostname() {
+
+    std::string username = this->getUserName();
+
+    trimNewline(username);
+
+	std::vector<std::string> splt = Split_(username);
+
+    return this->getNickName() + "!" + splt[0];
+}
