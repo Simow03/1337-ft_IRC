@@ -1,6 +1,0 @@
-PASS yassine
-USER k d a f
-NICK yassine2
-JOIN #group
- PRIVMSG #group : fin
-
