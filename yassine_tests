@@ -1,0 +1,14 @@
+➜  push git:(main) ✗ ./ircserv 1024 "
+dquote>
+dquote> "
+
+        . . . Waiting for connections . . .
+
+---------------------------------------------
+➜  push git:(main) ✗ ./ircserv 1024 "   "
+
+        . . . Waiting for connections . . .
+---------------------------------------------
+crash  when the client send nc 127.0.0.1 < /dev/random
+---------------------------------------------
+kill -SIGPIPE SERVER_PID
