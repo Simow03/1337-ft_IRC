@@ -29,6 +29,11 @@ bool is_valid_port(std::string portStr) {
 	return true;
 }
 
+bool password_invalid(std::string password) {
+	return (password.empty() || password.find(' ') != std::string::npos
+			|| password.find_first_not_of(" \t\n\r") == std::string::npos);
+}
+
 int main(int ac, char **av) {
 
 	if (ac != 3) {
@@ -55,7 +60,7 @@ int main(int ac, char **av) {
 
 	std::string password = av[2];
 
-	if (password.empty() || password.find(' ') != std::string::npos) {
+	if (password_invalid(password)) {
 		std::cerr << RED <<  BOLD << UNDERLINE << "\nError :"
 				<< RESET <<" invalid password\n"
 				<< RED <<  BOLD << UNDERLINE << "\nUsage :"
@@ -65,6 +70,7 @@ int main(int ac, char **av) {
 
 	signal(SIGINT, signalHandler);
 	signal(SIGTERM, signalHandler);
+	signal(SIGPIPE, SIG_IGN);
 
 	Server server(port, password);
 
