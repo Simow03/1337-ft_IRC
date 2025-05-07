@@ -370,9 +370,10 @@ void Server::processCommand(std::string &command, int fd, size_t i)
 		else
 		{
 
-			if (ircBot->isBotCommand(command)) {
+			if (ircBot->isBotCommand(command))
+			{
 				ircBot->processCommand(command, *client, fd);
-				return ;
+				return;
 			}
 
 			parse handl(command, this, *client);
@@ -411,6 +412,24 @@ void Server::disconnectClient(size_t i)
 				if (channels[i].client_is_admin(*disconnectedClient))
 					channels[i].remove_client_as_admin(*disconnectedClient);
 			}
+			std::string prefix = ":" + disconnectedClient->getNickName() + "!" + disconnectedClient->getUserName() + "@localhost";
+			std::string msg = prefix + " QUIT " + channels[i].GetName() + "\r\n";
+
+			std::vector<Client *> channelClients = get_clients_in_channel(channels[i].GetName());
+			for (std::vector<Client *>::iterator it = channelClients.begin(); it != channelClients.end(); ++it)
+			{
+				(*it)->sendMessage(msg);
+			}
+			std::vector<Client *> members = get_clients_in_channel(channels[i].GetName());
+			std::string client_list = "353 " + disconnectedClient->getNickName() + " = " + channels[i].GetName() + " :";
+			for (size_t i = 0; i < members.size(); ++i)
+			{
+				client_list += members[i]->getNickName() + " ";
+			}
+			client_list += "\r\n";
+			disconnectedClient->sendMessage(client_list);
+			std::string end_list = "366 " + disconnectedClient->getNickName() + " " + channels[i].GetName() + " :End of NAMES list\r\n";
+			disconnectedClient->sendMessage(end_list);
 		}
 	}
 
