@@ -83,13 +83,7 @@ void Client::setState(ClientState var) {
 };
 
 
-void trimNewline(std::string &str)
-{
-    while (!str.empty() && (str[str.size() - 1] == '\n' || str[str.size() - 1] == '\r'))
-        str.erase(str.size() - 1);
-}
-
- std::vector<std::string>	Split_(std::string recvmessage)
+ std::vector<std::string>	splitFct_(std::string recvmessage)
 {
 	std::vector<std::string> partsCmd;
 
@@ -105,13 +99,11 @@ void trimNewline(std::string &str)
 }
 
 
-std::string Client::getHostname() {
+std::string Client::make_host_name() {
 
     std::string username = this->getUserName();
-
-    trimNewline(username);
-
-	std::vector<std::string> splt = Split_(username);
-
+	while (!username.empty() && (username[username.size() - 1] == '\n' || username[username.size() - 1] == '\r'))
+        username.erase(username.size() - 1);
+	std::vector<std::string> splt = splitFct_(username);
     return this->getNickName() + "!" + splt[0];
 }

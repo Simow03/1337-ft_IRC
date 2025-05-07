@@ -3,7 +3,7 @@
 
 void parse::execute_kick(std::string arg, Server *server, Client &client)
 {
-	std::vector<std::string> partsCmd = Split(arg);
+	std::vector<std::string> partsCmd = splitFct(arg);
 	if (partsCmd.size() < 2)
 	{
 		client.sendMessage("461 KICK :Not enough parameters\r\n");

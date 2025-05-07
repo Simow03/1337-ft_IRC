@@ -19,7 +19,7 @@ void send_msg_to_invited(Client &client, std::string channel_name, std::string c
 
 void parse::execute_invite(std::string arg, Server *server, Client &client)
 {
-	std::vector<std::string> partsCmd = Split(arg);
+	std::vector<std::string> partsCmd = splitFct(arg);
 	if (partsCmd.size() < 2)
 	{
 		client.sendMessage("461 INVITE :Not enough parameters\r\n");
