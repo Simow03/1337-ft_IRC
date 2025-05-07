@@ -37,7 +37,7 @@ class parse
 
 
 };
-std::vector<std::string>	Split(std::string recvmessage);
+std::vector<std::string>	splitFct(std::string recvmessage);
 
 
 

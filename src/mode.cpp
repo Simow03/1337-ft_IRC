@@ -12,7 +12,7 @@ void parse::execute_mode(std::string arg, Server *server, Client &client)
 		client.sendMessage("461 MODE :Not enough parameters\r\n");
 		return;
 	}
-	std::vector<std::string> partsCmd = Split(arg);
+	std::vector<std::string> partsCmd = splitFct(arg);
 	if(partsCmd.empty() || partsCmd.size() < 2)
 	{
 		client.sendMessage("461 MODE :Not enough parameters\r\n");

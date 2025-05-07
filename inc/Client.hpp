@@ -59,7 +59,7 @@ public:
 
 	void sendMessage(std::string message) const;
 
-	std::string getHostname();
+	std::string make_host_name();
 };
 
 #endif

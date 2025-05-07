@@ -1,6 +1,6 @@
 #include "../inc/parse.hpp"
 
-std::vector<std::string>	Split(std::string recvmessage)
+std::vector<std::string>	splitFct(std::string recvmessage)
 {
 	std::vector<std::string> partsCmd;
 
@@ -54,7 +54,7 @@ void parse::execute_cmd(std::string cmd, std::string arg, Server *server, Client
 
 parse::parse(std::string buff, Server* server, Client &client)
 {
-    std::vector<std::string> partsCmd = Split(buff);
+    std::vector<std::string> partsCmd = splitFct(buff);
     cmd = partsCmd[0];
     if(partsCmd.size() > 1)
     {
