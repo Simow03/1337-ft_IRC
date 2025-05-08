@@ -9,7 +9,7 @@ void send_msg_to_invited(Client &client, std::string channel_name, std::string c
 		client.sendMessage("401 " + client.getNickName() + " " + client_name + " :No such nick/channel\r\n");
 		return;
 	}
-	std::string prefix = ":" + client.getNickName() + "!" + client.getUserName() + "@localhost";
+	std::string prefix = ":" + client.getNickName() + "!" + client.getUserName() + "@" + client.getIpAddress();
 	client.sendMessage("341 " + client.getNickName() + " " + client_name + " " + channel_name + "\r\n");
 
 	inviter->sendMessage(prefix + " INVITE " + client_name + " :" + channel_name + "\r\n");

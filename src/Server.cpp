@@ -412,7 +412,7 @@ void Server::disconnectClient(size_t i)
 				if (channels[i].client_is_admin(*disconnectedClient))
 					channels[i].remove_client_as_admin(*disconnectedClient);
 			}
-			std::string prefix = ":" + disconnectedClient->getNickName() + "!" + disconnectedClient->getUserName() + "@localhost";
+			std::string prefix = ":" + disconnectedClient->getNickName() + "!" + disconnectedClient->getUserName() + "@" + disconnectedClient->getIpAddress();
 			std::string msg = prefix + " QUIT " + channels[i].GetName() + "\r\n";
 
 			std::vector<Client *> channelClients = get_clients_in_channel(channels[i].GetName());
