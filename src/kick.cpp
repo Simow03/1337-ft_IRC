@@ -50,7 +50,7 @@ void parse::execute_kick(std::string arg, Server *server, Client &client)
 	if(client.getNickName() == target)
 		return;
 
-	std::string prefix = ":" + client.getNickName() + "!" + client.getUserName() + "@localhost";
+	std::string prefix = ":" + client.getNickName() + "!" + client.getUserName() + "@" + client.getIpAddress();
 	std::string msg = prefix + " KICK " + channel + " " + target + " :" + reason + "\r\n";
 
 	std::vector<Client *> channelClients = server->get_clients_in_channel(channel);

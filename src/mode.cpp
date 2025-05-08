@@ -161,7 +161,7 @@ void parse::execute_mode(std::string arg, Server *server, Client &client)
 			client.sendMessage("472 " + std::string(1, mode[i]) + " :is unknown mode char to me\r\n");
 			return;
 		}
-		std::string prefix = ":" + client.getNickName() + "!" + client.getUserName() + "@localhost";
+		std::string prefix = ":" + client.getNickName() + "!" + client.getUserName() + "@" + client.getIpAddress();
 		std::string finalMsg = prefix + " MODE " + channel_name + " ";
 		if (!mode.empty())
 		{
