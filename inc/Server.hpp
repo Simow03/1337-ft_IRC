@@ -47,7 +47,6 @@ private:
 	socklen_t ca_len;
 	struct pollfd pollfds;
 	std::vector<struct pollfd> clientfds;
-	std::vector<Client> clients;
 	std::vector<Channel> channels;
 	std::set<int> newlyConnectedClients;
 	int sockfd;
@@ -56,11 +55,12 @@ private:
 	Bot *ircBot;
 
 public:
-	// constructor : 
+	// constructor :
+	std::vector<Client> clients;
 	Server(int port, std::string &password);
 	~Server();
 
-	// server setup : 
+	// server setup :
 	void runServer(void);
 	void acceptNewConnection(void);
 	bool receiveClientData(size_t i);
@@ -88,7 +88,7 @@ public:
 	void remove_channel_limit(std::string channel_name);
 	void set_channel_key(std::string channel_name, std::string key);
 	void remove_channel_key(std::string channel_name);
-	Client *GetClientInChannel(std::string channel_name, std::string client_name);
+	int	GetClientInChannel(std::string channel_name, std::string client_name);
 	int clientAdmin(std::string channel_name, Client &client);
 	void remove_client_as_channel_admin(std::string channel_name, Client &client);
 	int limit(std::string channel_name);

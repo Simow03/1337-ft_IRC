@@ -45,3 +45,4 @@ void parse::execute_privmsg(std::string arg, Server *server, Client &client)
 	Client *temp = server->GetClientInServer(target);
 	temp->sendMessage(":" + client.getNickName() + "!" + client.getUserName() + " PRIVMSG " + target + " :" + message + "\r\n");
 }
+

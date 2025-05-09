@@ -83,7 +83,7 @@ void Client::setState(ClientState var) {
 };
 
 
- std::vector<std::string>	splitFct_(std::string recvmessage)
+std::vector<std::string>	splitFct_(std::string recvmessage)
 {
 	std::vector<std::string> partsCmd;
 
@@ -97,7 +97,6 @@ void Client::setState(ClientState var) {
     }
 	return(partsCmd);
 }
-
 
 std::string Client::make_host_name() {
 

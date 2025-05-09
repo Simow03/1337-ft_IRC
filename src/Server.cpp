@@ -487,44 +487,44 @@ void Server::sendWelcomeMessage(int fd, std::string nickname)
 	params.push_back("Welcome to the IRC Network " + nickname + "!");
 	sendNumericReply(fd, RPL_WELCOME_N, nickname, params);
 
-	params.clear();
-	params.push_back("Your host is IRC.localhost, running version 1.0");
-	sendNumericReply(fd, RPL_YOURHOST_N, nickname, params);
+	// params.clear();
+	// params.push_back("Your host is IRC.localhost, running version 1.0");
+	// sendNumericReply(fd, RPL_YOURHOST_N, nickname, params);
 
-	params.clear();
-	params.push_back("This server was created April 2025");
-	sendNumericReply(fd, RPL_CREATED_N, nickname, params);
+	// params.clear();
+	// params.push_back("This server was created April 2025");
+	// sendNumericReply(fd, RPL_CREATED_N, nickname, params);
 
-	params.clear();
-	params.push_back("IRC.localhost");
-	params.push_back("1.0");
-	params.push_back("i");
-	params.push_back("t");
-	params.push_back("k");
-	params.push_back("o");
-	params.push_back("l");
-	sendNumericReply(fd, RPL_MYINFO_N, nickname, params);
+	// params.clear();
+	// params.push_back("IRC.localhost");
+	// params.push_back("1.0");
+	// params.push_back("i");
+	// params.push_back("t");
+	// params.push_back("k");
+	// params.push_back("o");
+	// params.push_back("l");
+	// sendNumericReply(fd, RPL_MYINFO_N, nickname, params);
 
-	params.clear();
-	params.push_back("CHANNELLEN=");
-	params.push_back("NICKLEN=");
-	params.push_back("NETWORK=IRC");
-	params.push_back("PREFIX=");
-	params.push_back("CHANMODES=i,t,k,o,l");
-	params.push_back("are supported by this server");
-	sendNumericReply(fd, RPL_ISUPPORT_N, nickname, params);
+	// params.clear();
+	// params.push_back("CHANNELLEN=");
+	// params.push_back("NICKLEN=");
+	// params.push_back("NETWORK=IRC");
+	// params.push_back("PREFIX=");
+	// params.push_back("CHANMODES=i,t,k,o,l");
+	// params.push_back("are supported by this server");
+	// sendNumericReply(fd, RPL_ISUPPORT_N, nickname, params);
 
-	params.clear();
-	params.push_back("- Message of the Day -");
-	sendNumericReply(fd, RPL_MOTDSTART_N, nickname, params);
+	// params.clear();
+	// params.push_back("- Message of the Day -");
+	// sendNumericReply(fd, RPL_MOTDSTART_N, nickname, params);
 
-	params.clear();
-	params.push_back("- Welcome to the IRC server!");
-	sendNumericReply(fd, RPL_MOTD_N, nickname, params);
+	// params.clear();
+	// params.push_back("- Welcome to the IRC server!");
+	// sendNumericReply(fd, RPL_MOTD_N, nickname, params);
 
-	params.clear();
-	params.push_back("- End of MOTD");
-	sendNumericReply(fd, RPL_ENDOFMOTD_N, nickname, params);
+	// params.clear();
+	// params.push_back("- End of MOTD");
+	// sendNumericReply(fd, RPL_ENDOFMOTD_N, nickname, params);
 }
 
 Server::~Server()
