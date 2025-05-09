@@ -106,3 +106,12 @@ std::string Client::make_host_name() {
 	std::vector<std::string> splt = splitFct_(username);
     return this->getNickName() + "!" + splt[0];
 }
+
+std::string Client::info()
+{
+	std::string username = this->getUserName();
+	while (!username.empty() && (username[username.size() - 1] == '\n' || username[username.size() - 1] == '\r'))
+		username.erase(username.size() - 1);
+	std::vector<std::string> splt = splitFct_(username);
+	return this->getNickName() + "!" + splt[0] + "@" + this->getIpAddress();
+}

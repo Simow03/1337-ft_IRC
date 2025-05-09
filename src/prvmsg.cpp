@@ -13,36 +13,42 @@ void parse::execute_privmsg(std::string arg, Server *server, Client &client)
 	std::string message = "";
 	int isChannel = 0;
 	if(server->channel_exist(target))
-	{
 		isChannel = 1;
-	}
 	else if (server->client_in_server(target))
-	{
 		isChannel = 0;
-	}
 	else
 	{
 		client.sendMessage(" 401 " + target + " :No such nick/channel\r\n");
 		return;
 	}
-	if(partsCmd[1][0] != ':')
-		message += partsCmd[1];
+	// if(partsCmd[1][0] != ':')
+	// 	message += partsCmd[1];
+	// else
+	// {
+	// 	for(size_t i = 1; i < partsCmd.size(); i++)
+	// 	{
+	// 		message += partsCmd[i];
+	// 		if (i != partsCmd.size() - 1)
+	// 			message += " ";
+	// 	}
+	// }
+	size_t pos = arg.find(':');
+	if (pos != std::string::npos)
+		message = arg.substr(pos + 1);
 	else
-	{
-		for(size_t i = 1; i < partsCmd.size(); i++)
-		{
-			message += partsCmd[i];
-			if (i != partsCmd.size() - 1)
-				message += " ";
-		}
-	}
+		message = partsCmd[1];
 	if(isChannel)
 	{
-		std::string msg = ":" + client.getNickName() + "!" + client.getUserName() + " PRIVMSG " + target + " :" + message;
+		if (server->client_exist(target, client))
+		{
+			client.sendMessage(" 404 " + target + " :Cannot send to channel\r\n");
+			return;
+		}
+		std :: string msg = ":" + client.info() + " PRIVMSG " + target + " :" + message;
 		server->sendMessageToChannel(target, msg + "\r\n", client);
 		return;
 	}
 	Client *temp = server->GetClientInServer(target);
-	temp->sendMessage(":" + client.getNickName() + "!" + client.getUserName() + " PRIVMSG " + target + " :" + message + "\r\n");
+	std::string msg = ":" + client.info() + " PRIVMSG " + target + " :" + message;
+	temp->sendMessage(msg + "\r\n");
 }
-

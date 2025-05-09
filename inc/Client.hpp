@@ -60,6 +60,7 @@ public:
 	void sendMessage(std::string message) const;
 
 	std::string make_host_name();
+	std::string info();
 };
 
 #endif
