@@ -205,6 +205,61 @@ void Server::processCommand(std::string &command, int fd, size_t i)
 		}
 	}
 
+	if (!clientFound && cmd != "QUIT")
+	{
+		std::string ipStr = inet_ntoa(ca.sin_addr);
+		std::string tempNickname = "";
+		std::string tempUsername = "";
+		Client newClient(fd, ipStr, tempNickname, tempUsername, false, false);
+		clients.push_back(newClient);
+		client = &clients.back();
+		clientFound = true;
+	}
+
+	if (cmd == "QUIT")
+	{
+		disconnectClient(i);
+		return;
+	}
+
+	if (cmd == "PASS")
+	{
+		std::string inPass;
+		if (iss >> inPass)
+		{
+			if (!inPass.empty() && inPass[0] == ':')
+				inPass = inPass.substr(1);
+
+			if (inPass == password)
+				client->setHasPass(true);
+
+			else
+			{
+				std::vector<std::string> params;
+				params.push_back("Password incorrect");
+				sendNumericReply(fd, ERR_PASSWDMISMATCH_N, client->getNickName().empty() ? "*" : client->getNickName(), params);
+				return;
+			}
+		}
+		else
+		{
+			std::vector<std::string> params;
+			params.push_back("PASS");
+			params.push_back("Not enough parameters");
+			sendNumericReply(fd, ERR_NEEDMOREPARAMS_N, client->getNickName().empty() ? "*" : client->getNickName(), params);
+		}
+		return;
+	}
+
+	if (!client->getHasPass())
+	{
+		std::vector<std::string> params;
+		params.push_back(cmd);
+		params.push_back("You have not registered");
+		sendNumericReply(fd, ERR_NOTREGISTERED_N, client->getNickName().empty() ? "*" : client->getNickName(), params);
+		return;
+	}
+
 	if (cmd == "NICK")
 	{
 		std::string nickname;
@@ -216,7 +271,7 @@ void Server::processCommand(std::string &command, int fd, size_t i)
 		{
 			std::vector<std::string> errParams;
 			errParams.push_back("No nickname given");
-			sendNumericReply(fd, ERR_NONICKNAMEGIVEN_N, clientFound ? (client->getNickName().empty() ? "*" : client->getNickName()) : "*", errParams);
+			sendNumericReply(fd, ERR_NONICKNAMEGIVEN_N, client->getNickName().empty() ? "*" : client->getNickName(), errParams);
 			return;
 		}
 
@@ -236,7 +291,7 @@ void Server::processCommand(std::string &command, int fd, size_t i)
 			std::vector<std::string> errParams;
 			errParams.push_back(nickname);
 			errParams.push_back("Nickname is already in use");
-			sendNumericReply(fd, ERR_NICKNAMEINUSE_N, clientFound ? (client->getNickName().empty() ? "*" : client->getNickName()) : "*", errParams);
+			sendNumericReply(fd, ERR_NICKNAMEINUSE_N, client->getNickName().empty() ? "*" : client->getNickName(), errParams);
 			return;
 		}
 
@@ -244,23 +299,27 @@ void Server::processCommand(std::string &command, int fd, size_t i)
 		{
 			std::vector<std::string> params;
 			std::string oldNickname = client->getNickName();
+
 			client->setNickName(nickname);
 
-			std::string nickChangeMsg = ":" + oldNickname + "!" + client->getUserName() + "@" + client->getIpAddress() + " NICK :" + nickname + "\r\n";
-
-			std::vector<std::string> client_channels = get_channels(*client);
-			for (size_t i = 0; i < client_channels.size(); i++)
+			if (!oldNickname.empty())
 			{
-				std::vector<Client *> members = get_clients_in_channel(client_channels[i]);
-				for (size_t i = 0; i < members.size(); ++i)
+				std::string nickChangeMsg = ":" + oldNickname + "!" + client->getUserName() + "@" + client->getIpAddress() + " NICK :" + nickname + "\r\n";
+
+				std::vector<std::string> client_channels = get_channels(*client);
+				for (size_t i = 0; i < client_channels.size(); i++)
 				{
-					members[i]->sendMessage(nickChangeMsg);
+					std::vector<Client *> members = get_clients_in_channel(client_channels[i]);
+					for (size_t i = 0; i < members.size(); ++i)
+					{
+						members[i]->sendMessage(nickChangeMsg);
+					}
 				}
+
+				send(fd, nickChangeMsg.c_str(), nickChangeMsg.size(), 0);
 			}
 
-			send(fd, nickChangeMsg.c_str(), nickChangeMsg.size(), 0);
-
-			if (!client->getUserName().empty() && !client->getIsAuthenticated())
+			if (client->getHasPass() && !client->getNickName().empty() && !client->getUserName().empty() && !client->getIsAuthenticated())
 			{
 				client->setIsAuthenticated(true);
 				sendWelcomeMessage(fd, nickname);
@@ -289,55 +348,21 @@ void Server::processCommand(std::string &command, int fd, size_t i)
 			std::vector<std::string> errParams;
 			errParams.push_back("USER");
 			errParams.push_back("Not enough parameters");
-			sendNumericReply(fd, ERR_NEEDMOREPARAMS_N, clientFound ? (client->getNickName().empty() ? "*" : client->getNickName()) : "*", errParams);
+			sendNumericReply(fd, ERR_NEEDMOREPARAMS_N, client->getNickName().empty() ? "*" : client->getNickName(), errParams);
 			return;
 		}
 
-		if (clientFound)
-		{
-			client->setUserName(username);
+		client->setUserName(username);
 
-			if (!client->getNickName().empty() && !client->getIsAuthenticated())
-			{
-				client->setIsAuthenticated(true);
-				sendWelcomeMessage(fd, client->getNickName());
-				std::cout << GREEN << BOLD << "\nclient " << fd << " authenticated successfuly!\n"
-						  << RESET << std::endl;
-			}
-		}
-		else
+		if (client->getHasPass() && !client->getNickName().empty() && !client->getUserName().empty() && !client->getIsAuthenticated())
 		{
-			std::string ipStr = inet_ntoa(ca.sin_addr);
-			std::string tempNickname = "";
-			Client newClient(fd, ipStr, tempNickname, username, false, false);
-			clients.push_back(newClient);
-			std::cout << GREEN << BOLD << "\nclient " << fd << " added with username : " << username << "!\n"
+			client->setIsAuthenticated(true);
+			sendWelcomeMessage(fd, client->getNickName());
+			std::cout << GREEN << BOLD << "\nclient " << fd << " authenticated successfuly!\n"
 					  << RESET << std::endl;
 		}
 	}
-	else if (cmd == "PASS")
-	{
-		std::string inPass;
-		if (iss >> inPass)
-		{
-			if (!inPass.empty() && inPass[0] == ':')
-				inPass = inPass.substr(1);
-			if (inPass != password)
-			{
-				std::vector<std::string> params;
-				params.push_back("Password incorrect");
-				sendNumericReply(fd, ERR_PASSWDMISMATCH_N, clientFound ? (client->getNickName().empty() ? "*" : client->getNickName()) : "*", params);
-				return;
-			}
-		}
-		else
-		{
-			std::vector<std::string> params;
-			params.push_back("PASS");
-			params.push_back("Not enough parameters");
-			sendNumericReply(fd, ERR_NEEDMOREPARAMS_N, clientFound ? (client->getNickName().empty() ? "*" : client->getNickName()) : "*", params);
-		}
-	}
+
 	else if (cmd == "PING" || cmd == "PONG")
 	{
 		std::string extraParam;
@@ -347,29 +372,18 @@ void Server::processCommand(std::string &command, int fd, size_t i)
 		toPushParams.push_back(extraParam.empty() ? "IRC.localhost" : extraParam);
 		sendIRCReply(fd, "IRC.localhost", "PONG", toPushParams);
 	}
-	else if (cmd == "QUIT")
-	{
-		disconnectClient(i);
-	}
 
 	else
 	{
-		if (!clientFound)
+		if (!client->getIsAuthenticated())
 		{
 			std::vector<std::string> params;
 			params.push_back(cmd);
 			params.push_back("You must complete registration first");
-			sendNumericReply(fd, ERR_NOTREGISTERED_N, "*", params);
+			sendNumericReply(fd, ERR_NOTREGISTERED_N, client->getNickName().empty() ? "*" : client->getNickName(), params);
 			return;
 		}
-		else if (!client->getIsAuthenticated())
-		{
-			std::vector<std::string> params;
-			params.push_back(cmd);
-			params.push_back("You must complete registration first");
-			sendNumericReply(fd, ERR_NOTREGISTERED_N, clientFound ? (client->getNickName().empty() ? "*" : client->getNickName()) : "*", params);
-			return;
-		}
+
 		else
 		{
 
@@ -484,50 +498,10 @@ void Server::sendNumericReply(int fd, const std::string &numeric, const std::str
 
 void Server::sendWelcomeMessage(int fd, std::string nickname)
 {
-
 	std::vector<std::string> params;
 
 	params.push_back("Welcome to the IRC Network " + nickname + "!");
 	sendNumericReply(fd, RPL_WELCOME_N, nickname, params);
-
-	// params.clear();
-	// params.push_back("Your host is IRC.localhost, running version 1.0");
-	// sendNumericReply(fd, RPL_YOURHOST_N, nickname, params);
-
-	// params.clear();
-	// params.push_back("This server was created April 2025");
-	// sendNumericReply(fd, RPL_CREATED_N, nickname, params);
-
-	// params.clear();
-	// params.push_back("IRC.localhost");
-	// params.push_back("1.0");
-	// params.push_back("i");
-	// params.push_back("t");
-	// params.push_back("k");
-	// params.push_back("o");
-	// params.push_back("l");
-	// sendNumericReply(fd, RPL_MYINFO_N, nickname, params);
-
-	// params.clear();
-	// params.push_back("CHANNELLEN=");
-	// params.push_back("NICKLEN=");
-	// params.push_back("NETWORK=IRC");
-	// params.push_back("PREFIX=");
-	// params.push_back("CHANMODES=i,t,k,o,l");
-	// params.push_back("are supported by this server");
-	// sendNumericReply(fd, RPL_ISUPPORT_N, nickname, params);
-
-	// params.clear();
-	// params.push_back("- Message of the Day -");
-	// sendNumericReply(fd, RPL_MOTDSTART_N, nickname, params);
-
-	// params.clear();
-	// params.push_back("- Welcome to the IRC server!");
-	// sendNumericReply(fd, RPL_MOTD_N, nickname, params);
-
-	// params.clear();
-	// params.push_back("- End of MOTD");
-	// sendNumericReply(fd, RPL_ENDOFMOTD_N, nickname, params);
 }
 
 Server::~Server()
