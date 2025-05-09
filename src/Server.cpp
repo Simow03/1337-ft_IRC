@@ -147,8 +147,11 @@ bool Server::receiveClientData(size_t i)
 	int fd = clientfds[i].fd;
 	int received = recv(fd, buffer, sizeof(buffer) - 1, 0);
 
-	if (received < 0)
+	if (received <= 0)
 	{
+		if (received == 0)
+			return false;
+
 		if (errno == EWOULDBLOCK || errno == EAGAIN)
 		{
 			return true;
