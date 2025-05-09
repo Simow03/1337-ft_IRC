@@ -195,16 +195,19 @@ void Server::remove_channel_key(std::string channel_name)
         }
     }
 }
-Client* Server::GetClientInChannel(std::string channel_name, std::string client_name)
+int Server::GetClientInChannel(std::string channel_name, std::string client_name)
 {
     for (size_t i = 0; i < channels.size(); i++)
     {
+        // return fd of client
         if (channels[i].GetName() == channel_name)
         {
-            return channels[i].GetClient(client_name);
+            Client *temp = channels[i].GetClient(client_name);
+            if (temp != NULL)
+                return temp->getFd();
         }
     }
-    return NULL;
+    return -1;
 }
 int Server::clientAdmin(std::string channel_name, Client &client)
 {

@@ -46,9 +46,16 @@ void parse::execute_kick(std::string arg, Server *server, Client &client)
 		client.sendMessage("441 " + client.getNickName() + " " + target + " " + channel + " :They aren't on that channel\r\n");
 		return;
 	}
-	Client *targetClient = server->GetClientInChannel(channel, target);
-	if(client.getNickName() == target)
-		return;
+	int fd = server->GetClientInChannel(channel, target);
+	Client *targetClient = NULL;
+	for (std::vector<Client>::iterator it = server->clients.begin(); it != server->clients.end(); ++it)
+	{
+		if (it->getFd() == fd)
+		{
+			targetClient = &(*it);
+			break;
+		}
+	}
 
 	std::string prefix = ":" + client.getNickName() + "!" + client.getUserName() + "@" + client.getIpAddress();
 	std::string msg = prefix + " KICK " + channel + " " + target + " :" + reason + "\r\n";
@@ -63,15 +70,4 @@ void parse::execute_kick(std::string arg, Server *server, Client &client)
 	{
 		server->remove_client_as_channel_admin(channel, *targetClient);
 	}
-
-	std::vector<Client *> members = server->get_clients_in_channel(channel);
-    std::string client_list = "353 " + client.getNickName() + " = " + channel + " :";
-    for (size_t i = 0; i < members.size(); ++i)
-    {
-        client_list += members[i]->getNickName() + " ";
-    }
-    client_list += "\r\n";
-    client.sendMessage(client_list);
-    std::string end_list = "366 " + client.getNickName() + " " + channel + " :End of NAMES list\r\n";
-    client.sendMessage(end_list);
 }
