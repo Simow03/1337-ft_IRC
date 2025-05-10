@@ -37,28 +37,20 @@ void parse::execute_topic(std::string arg, Server *server, Client &client)
 	}
 	else
 	{
-		std::string check = partsCmd[1];
 		std::string topic = "";
-		if(check[0] == ':')
+		size_t pos = arg.find(':');
+		if (pos != std::string::npos)
+			topic = arg.substr(pos + 1);
+		else
+			topic = partsCmd[1];
+		if (topic == "")
 		{
-			if(partsCmd.size() == 2)
-			{
-				server->set_topic(channel_name, "");
-				client.sendMessage("332 " + client.getNickName() + " " + channel_name + " :" + "\r\n");
-				return;
-			}
-			for(size_t i = 2; i < partsCmd.size(); i++)
-			{
-				topic += partsCmd[i];
-				if(i != partsCmd.size() - 1)
-					topic += " ";
-			}
-			server->set_topic(channel_name, topic);
-			client.sendMessage("332 " + client.getNickName() + " " + channel_name + " :" + topic + "\r\n");
+			server->set_topic(channel_name, "");
+			client.sendMessage("332 " + client.getNickName() + " " + channel_name + " :" + "\r\n");
 			return;
 		}
-		server->set_topic(channel_name, check);
-		client.sendMessage("332 " + client.getNickName() + " " + channel_name + " :" + check + "\r\n");
+		server->set_topic(channel_name, topic);
+		client.sendMessage("332 " + client.getNickName() + " " + channel_name + " :" + topic + "\r\n");
 		return;
 	}
 }

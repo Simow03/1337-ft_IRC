@@ -21,17 +21,7 @@ void parse::execute_privmsg(std::string arg, Server *server, Client &client)
 		client.sendMessage(" 401 " + target + " :No such nick/channel\r\n");
 		return;
 	}
-	// if(partsCmd[1][0] != ':')
-	// 	message += partsCmd[1];
-	// else
-	// {
-	// 	for(size_t i = 1; i < partsCmd.size(); i++)
-	// 	{
-	// 		message += partsCmd[i];
-	// 		if (i != partsCmd.size() - 1)
-	// 			message += " ";
-	// 	}
-	// }
+
 	size_t pos = arg.find(':');
 	if (pos != std::string::npos)
 		message = arg.substr(pos + 1);
@@ -39,7 +29,7 @@ void parse::execute_privmsg(std::string arg, Server *server, Client &client)
 		message = partsCmd[1];
 	if(isChannel)
 	{
-		if (server->client_exist(target, client))
+		if (server->client_exist(target, client) == 0)
 		{
 			client.sendMessage(" 404 " + target + " :Cannot send to channel\r\n");
 			return;
