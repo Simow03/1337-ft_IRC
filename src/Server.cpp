@@ -270,18 +270,18 @@ void Server::processCommand(std::string &command, int fd, size_t i)
 			return;
 		}
 
-		bool unique = true;
+		bool nickUsedByAuthedUser = false;
 
 		for (std::vector<Client>::iterator it = clients.begin(); it != clients.end(); ++it)
 		{
-			if (it->getNickName() == nickname && it->getFd() != fd)
+			if (it->getNickName() == nickname && it->getFd() != fd && it->getIsAuthenticated())
 			{
-				unique = false;
+				nickUsedByAuthedUser = true;
 				break;
 			}
 		}
 
-		if (!unique)
+		if (nickUsedByAuthedUser)
 		{
 			std::vector<std::string> errParams;
 			errParams.push_back(nickname);
@@ -290,10 +290,11 @@ void Server::processCommand(std::string &command, int fd, size_t i)
 			return;
 		}
 
+		std::string oldNickname = clientFound ? client->getNickName() : "";
+
 		if (clientFound)
 		{
 			std::vector<std::string> params;
-			std::string oldNickname = client->getNickName();
 
 			client->setNickName(nickname);
 
@@ -316,21 +317,30 @@ void Server::processCommand(std::string &command, int fd, size_t i)
 
 			if (client->getHasPass() && !client->getNickName().empty() && !client->getUserName().empty() && !client->getIsAuthenticated())
 			{
+
+				for (std::vector<Client>::iterator it = clients.begin(); it != clients.end(); ++it)
+				{
+					if (it->getFd() != fd && it->getNickName() == nickname && !it->getIsAuthenticated())
+					{
+						std::vector<std::string> errParams;
+						errParams.push_back(nickname);
+						errParams.push_back("Nickname is already in use");
+						sendNumericReply(it->getFd(), ERR_NICKNAMEINUSE_N, it->getNickName().empty() ? "*" : it->getNickName(), errParams);
+						std::string tempNickName = "";
+						it->setNickName(tempNickName);
+					}
+				}
+
 				client->setIsAuthenticated(true);
+
+				if (newlyConnectedClients.find(fd) != newlyConnectedClients.end())
+					newlyConnectedClients.erase(fd);
+
 				sendWelcomeMessage(fd, nickname);
 
 				std::cout << GREEN << BOLD << "\nclient " << fd << " authenticated successfuly!\n"
 						  << RESET << std::endl;
 			}
-		}
-		else
-		{
-			std::string ipStr = inet_ntoa(ca.sin_addr);
-			std::string tempUsername = "";
-			Client newClient(fd, ipStr, nickname, tempUsername, false, false);
-			clients.push_back(newClient);
-			std::cout << GREEN << BOLD << "\nclient " << fd << " added with nickname : " << nickname << "!\n"
-					  << RESET << std::endl;
 		}
 	}
 	else if (cmd == "USER")
@@ -351,10 +361,25 @@ void Server::processCommand(std::string &command, int fd, size_t i)
 
 		if (client->getHasPass() && !client->getNickName().empty() && !client->getUserName().empty() && !client->getIsAuthenticated())
 		{
+			for (std::vector<Client>::iterator it = clients.begin(); it != clients.end(); ++it)
+			{
+				if (it->getFd() != fd && it->getNickName() == client->getNickName() && !it->getIsAuthenticated())
+				{
+					std::vector<std::string> errParams;
+					errParams.push_back(client->getNickName());
+					errParams.push_back("Nickname is already in use");
+					sendNumericReply(it->getFd(), ERR_NICKNAMEINUSE_N, it->getNickName().empty() ? "*" : it->getNickName(), errParams);
+					std::string tempNickName = "";
+					it->setNickName(tempNickName);
+				}
+			}
+
 			client->setIsAuthenticated(true);
+
+			if (newlyConnectedClients.find(fd) != newlyConnectedClients.end())
+				newlyConnectedClients.erase(fd);
+
 			sendWelcomeMessage(fd, client->getNickName());
-			std::cout << GREEN << BOLD << "\nclient " << fd << " authenticated successfuly!\n"
-					  << RESET << std::endl;
 		}
 	}
 
