@@ -1,2 +1,24 @@
-privmsg Replays
 
+PASS yassine:IRC.localhost 464 * :Password incorrect
+PASS yassidn^Dhh^D
+:IRC.localhost 464 * :Password incorrect
+(should buffring the commands test in the subject :\$> nc -C 127.0.0.1 6667
+com^Dman^Dd
+\$> )
+-------------------------------------------------------------------------------------
+the client still in the channel after he disconnect !
+-------------------------------------------------------------------------------------
+➜  push git:(main) ✗ nc localhost 5555
+PASS s
+NICK khalid
+NICK yassine
+:IRC.localhost 433 khalid yassine :Nickname is already in use
+NICK HAMZA
+:khalid!@127.0.0.1 NICK :HAMZA
+
+
+➜  push git:(main) ✗ nc localhost 5555
+PASS s
+NICK khalid
+:IRC.localhost 433 * khalid :Nickname is already in use
+-------------------------------------------------------------------------------------
