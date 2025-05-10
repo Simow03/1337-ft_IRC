@@ -55,12 +55,7 @@ void Server::runServer()
 			if (pollStatus < 0)
 			{
 				for (size_t i = 0; i < clientfds.size(); i++)
-					close(clientfds[i].fd);
-
-				if (sockfd > 0)
-					close(sockfd);
-
-				clientfds.clear();
+					disconnectClient(i);
 
 				if (!g_running)
 				{
