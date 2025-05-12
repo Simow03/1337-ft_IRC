@@ -90,6 +90,7 @@ void Server::runServer()
 					if (newlyConnectedClients.find(fd) != newlyConnectedClients.end())
 					{
 						newlyConnectedClients.erase(fd);
+						appendToBuffer.erase(fd);
 						continue;
 					}
 
@@ -157,23 +158,27 @@ bool Server::receiveClientData(size_t i)
 
 	buffer[received] = '\0';
 
-	std::string message(buffer);
+	std::string strBuffer(buffer);
+	appendToBuffer[fd] += buffer;
 	size_t pos = 0;
 	std::string command;
 
-	while ((pos = message.find("\r\n")) != std::string::npos || (pos = message.find("\n")) != std::string::npos)
-	{
-		command = message.substr(0, pos);
-		message.erase(0, pos + (message[pos] == '\r' ? 2 : 1));
-		if (!command.empty())
-		{
-			processCommand(command, fd, i);
-		}
-	}
+	while (true) {
+		pos = appendToBuffer[fd].find("\r\n");
+		if (pos == std::string::npos)
+			pos = appendToBuffer[fd].find("\n");
 
-	if (!message.empty())
-	{
-		processCommand(message, fd, i);
+		if (pos == std::string::npos)
+			break;
+
+		command = appendToBuffer[fd].substr(0, pos);
+
+		if (pos + 1 < appendToBuffer[fd].length() && appendToBuffer[fd][pos] == '\r' && appendToBuffer[fd][pos + 1] == '\n')
+			appendToBuffer[fd].erase(0, pos + 2);
+		else
+			appendToBuffer[fd].erase(0, pos + 1);
+		if (!command.empty())
+			processCommand(command, fd, i);
 	}
 
 	return true;
@@ -421,6 +426,7 @@ void Server::processCommand(std::string &command, int fd, size_t i)
 void Server::disconnectClient(size_t i)
 {
 	int fd = clientfds[i].fd;
+	appendToBuffer.erase(fd);
 
 	std::cout << RED << BOLD << "\nclient " << fd << " disconnected!\n"
 			  << RESET << std::endl;

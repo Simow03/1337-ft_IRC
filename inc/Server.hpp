@@ -11,6 +11,7 @@
 # include <fcntl.h>
 # include <unistd.h>
 # include <vector>
+# include <map>
 # include <set>
 # include <cstring>
 # include <cerrno>
@@ -52,6 +53,7 @@ private:
 	int sockfd;
 	int clientfd;
 	int pollStatus;
+	std::map<int, std::string> appendToBuffer;
 	Bot *ircBot;
 
 public:
