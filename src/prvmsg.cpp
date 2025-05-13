@@ -6,7 +6,7 @@ void parse::execute_privmsg(std::string arg, Server *server, Client &client)
 	std::vector<std::string> partsCmd = splitFct(arg);
 	if (partsCmd.size() < 2)
 	{
-		std::string msg = ERR_NEEDMOREPARAMS(std::string("PRIVMSG"));
+		std::string msg = ":IRCserver 461 PRIVMSG :Not enough parameters\r\n";
 		client.sendMessage(msg);
 		return;
 	}
