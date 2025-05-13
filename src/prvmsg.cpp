@@ -3,10 +3,16 @@
 
 void parse::execute_privmsg(std::string arg, Server *server, Client &client)
 {
+	if (arg.empty())
+	{
+		std::string msg = "461 PRIVMSG :Not enough parameters\r\n";
+		client.sendMessage(msg);
+		return;
+	}
 	std::vector<std::string> partsCmd = splitFct(arg);
 	if (partsCmd.size() < 2)
 	{
-		std::string msg = ":IRCserver 461 PRIVMSG :Not enough parameters\r\n";
+		std::string msg = "461 PRIVMSG :Not enough parameters\r\n";
 		client.sendMessage(msg);
 		return;
 	}

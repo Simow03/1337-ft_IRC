@@ -148,6 +148,11 @@ void parse::execute_mode(std::string arg, Server *server, Client &client)
 					brodcast_message(channel_name, server, message);
 					pos++;
 				}
+				else
+				{
+					client.sendMessage("461 MODE o :Operator mode requires a nickname\r\n");
+					continue;
+				}
 			}
 		}
 		else if(mode[i] == 't')

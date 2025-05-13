@@ -2,6 +2,11 @@
 
 void parse::execute_topic(std::string arg, Server *server, Client &client)
 {
+	if (arg.empty())
+	{
+		client.sendMessage("461 TOPIC :Not enough parameters\r\n");
+		return;
+	}
 	std::vector<std::string> partsCmd = splitFct(arg);
 	if (partsCmd.size() < 1)
 	{
