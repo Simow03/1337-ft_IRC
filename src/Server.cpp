@@ -265,8 +265,6 @@ void Server::processCommand(std::string &command, int fd, size_t i)
 		std::string nickname;
 		iss >> nickname;
 
-		std::cout << nickname << std::endl;
-
 		if (nickname.empty() || nickname == ":")
 		{
 			std::vector<std::string> errParams;
