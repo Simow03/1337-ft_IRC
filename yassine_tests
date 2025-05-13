@@ -6,19 +6,4 @@ PASS yassidn^Dhh^D
 com^Dman^Dd
 \$> )
 -------------------------------------------------------------------------------------
-the client still in the channel after he disconnect !
--------------------------------------------------------------------------------------
-➜  push git:(main) ✗ nc localhost 5555
-PASS s
-NICK khalid
-NICK yassine
-:IRC.localhost 433 khalid yassine :Nickname is already in use
-NICK HAMZA
-:khalid!@127.0.0.1 NICK :HAMZA
 
-
-➜  push git:(main) ✗ nc localhost 5555
-PASS s
-NICK khalid
-:IRC.localhost 433 * khalid :Nickname is already in use
--------------------------------------------------------------------------------------

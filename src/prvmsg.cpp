@@ -6,7 +6,8 @@ void parse::execute_privmsg(std::string arg, Server *server, Client &client)
 	std::vector<std::string> partsCmd = splitFct(arg);
 	if (partsCmd.size() < 2)
 	{
-		client.sendMessage(" 461 PRIVMSG :Not enough parameters\r\n");
+		std::string msg = ERR_NEEDMOREPARAMS(std::string("PRIVMSG"));
+		client.sendMessage(msg);
 		return;
 	}
 	std::string target = partsCmd[0];
@@ -18,7 +19,7 @@ void parse::execute_privmsg(std::string arg, Server *server, Client &client)
 		isChannel = 0;
 	else
 	{
-		client.sendMessage(" 401 " + target + " :No such nick/channel\r\n");
+		client.sendMessage(ERR_NOSUCHNICK(target));
 		return;
 	}
 
@@ -31,7 +32,7 @@ void parse::execute_privmsg(std::string arg, Server *server, Client &client)
 	{
 		if (server->client_exist(target, client) == 0)
 		{
-			client.sendMessage(" 404 " + target + " :Cannot send to channel\r\n");
+			client.sendMessage(":IRCServer 442 " + target + " :You're not on that channel\r\n");
 			return;
 		}
 		std :: string msg = ":" + client.info() + " PRIVMSG " + target + " :" + message;
