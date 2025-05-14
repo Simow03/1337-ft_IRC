@@ -24,7 +24,9 @@ void parse::execute_topic(std::string arg, Server *server, Client &client)
 		client.sendMessage("442 " + channel_name + " :You're not on that channel\r\n");
 		return;
 	}
-	if(server->is_topic_restricted(channel_name) == 1 && server->client_isAdmin(channel_name, client) == 0)
+	if (server->is_topic_restricted(channel_name) == 1
+		&& server->client_isAdmin(channel_name, client) == 0
+		&& partsCmd.size() != 1)
 	{
 		client.sendMessage("482 " + channel_name + " :You're not channel operator\r\n");
 		return;
