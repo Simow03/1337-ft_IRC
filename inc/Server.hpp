@@ -57,12 +57,10 @@ private:
 	Bot *ircBot;
 
 public:
-	// constructor :
 	std::vector<Client> clients;
 	Server(int port, std::string &password);
 	~Server();
 
-	// server setup :
 	void runServer(void);
 	void acceptNewConnection(void);
 	bool receiveClientData(size_t i);
@@ -72,7 +70,6 @@ public:
 	void sendNumericReply(int fd, const std::string &numeric, const std::string &nickname, const std::vector<std::string> &params);
 	void sendWelcomeMessage(int fd, std::string nickname);
 
-	// server utils :
 	void add_channel(std::string name);
 	int channel_exist(std::string channel_name);
 	int client_exist(std::string channel_name, Client &client);
@@ -105,6 +102,7 @@ public:
 	void sendMessageToChannel(std::string channel_name, std::string message , Client &client);
 	std::vector<Client *> get_clients_in_channel(std::string channel_name);
 	std::vector<std::string> get_channels(Client c);
+	bool isValidNickname(std::string &nickname) const;
 };
 
 #endif

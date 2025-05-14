@@ -18,6 +18,7 @@
 #define ERR_NEEDMOREPARAMS_N "461"
 #define ERR_PASSWDMISMATCH_N "464"
 #define ERR_NOTREGISTERED_N "451"
+#define ERR_ERRONEUSNICKNAME_N "432"
  
 #define ERR_NICKNAMEINUSE(target)						PREFIX "433 " + target + " :Nickname is already in use" POSTFIX
 #define ERR_NEEDMOREPARAMS(command)						PREFIX "461 " + command + " :Not enough parameters" POSTFIX

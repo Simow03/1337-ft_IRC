@@ -294,6 +294,16 @@ void Server::processCommand(std::string &command, int fd, size_t i)
 			return;
 		}
 
+		std::string checkForLeadingChar = "0123456789-+@!#:&$. \t\r\n";
+		if (checkForLeadingChar.find(nickname[0]) != std::string::npos || !isValidNickname(nickname))
+		{
+			std::vector<std::string> errParams;
+			errParams.push_back(nickname);
+			errParams.push_back("Erroneus nickname");
+			sendNumericReply(fd, ERR_ERRONEUSNICKNAME_N, client->getNickName().empty() ? "*" : client->getNickName(), errParams);
+			return;
+		}
+
 		std::string oldNickname = clientFound ? client->getNickName() : "";
 
 		if (clientFound)
@@ -527,6 +537,19 @@ void Server::sendWelcomeMessage(int fd, std::string nickname)
 
 	params.push_back("Welcome to the IRC Network " + nickname + "!");
 	sendNumericReply(fd, RPL_WELCOME_N, nickname, params);
+}
+
+bool Server::isValidNickname(std::string &nickname) const
+{
+	for (size_t i = 0; i < nickname.length(); i++)
+	{
+		char c = nickname[i];
+
+		if (!(isalnum(c) || c == '-' || c == '_' || c == '[' || c == ']' || c == '\\' ||
+			c == '`' || c == '^' || c == '{' || c == '}' || c == '|'))
+				return false;
+	}
+	return true;
 }
 
 Server::~Server()
