@@ -163,7 +163,8 @@ bool Server::receiveClientData(size_t i)
 	size_t pos = 0;
 	std::string command;
 
-	while (true) {
+	while (true)
+	{
 		pos = appendToBuffer[fd].find("\r\n");
 		if (pos == std::string::npos)
 			pos = appendToBuffer[fd].find("\n");

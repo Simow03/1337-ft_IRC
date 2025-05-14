@@ -1,9 +1,0 @@
-
-PASS yassine:IRC.localhost 464 * :Password incorrect
-PASS yassidn^Dhh^D
-:IRC.localhost 464 * :Password incorrect
-(should buffring the commands test in the subject :\$> nc -C 127.0.0.1 6667
-com^Dman^Dd
-\$> )
--------------------------------------------------------------------------------------
-

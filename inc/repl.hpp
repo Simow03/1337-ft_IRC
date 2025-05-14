@@ -1,9 +1,8 @@
-#define once
+#ifndef REPL_HPP
+#define REPL_HPP
 
 #define PREFIX ":IRCServer "
 #define POSTFIX "\r\n"
-
-//Errors :
 
 #define RPL_WELCOME_N "001"
 #define RPL_YOURHOST_N "002"
@@ -41,7 +40,6 @@
 #define ERR_UNKNOWNMODE(nickname, channelname, mode)	(std::string(": 472 ") + nickname + " " + channelname + " " + mode + " :is not a recognised channel mode" + POSTFIX)
 #define ERR_INCORPASS(nickname)							(": 464 " + nickname + " :Password incorrect !" + POSTFIX )
 
-//Replays :
 #define RPL_WELCOME(sender, msg)               			PREFIX "001 " + sender + " : " + msg + POSTFIX
 #define RPL_NAMREPLY(sender, channel, users)    		PREFIX "353 " + sender + " = " + channel + " :" + users + POSTFIX
 #define RPL_ENDOFNAMES(sender, channel)        			PREFIX "366 " + sender + " " + channel + " :End of /NAMES list." POSTFIX
@@ -56,3 +54,5 @@
 #define RPL_JOIN(sender, channel)						":" + sender + " JOIN :" + channel + POSTFIX
 #define RPL_CHANGEMODE(hostname, channelname, mode)		(":" + hostname + " MODE " + channelname + " " + mode + POSTFIX)
 #define RPL_UMODEIS(hostname, channelname, mode, user)	":" + hostname + " MODE " + channelname + " " + mode + " " + user + POSTFIX
+
+#endif

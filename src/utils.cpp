@@ -199,7 +199,6 @@ int Server::GetClientInChannel(std::string channel_name, std::string client_name
 {
     for (size_t i = 0; i < channels.size(); i++)
     {
-        // return fd of client
         if (channels[i].GetName() == channel_name)
         {
             Client *temp = channels[i].GetClient(client_name);
