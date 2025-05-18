@@ -359,7 +359,7 @@ void Server::processCommand(std::string &command, int fd, size_t i)
 		std::string username;
 		iss >> username;
 
-		if (username.empty())
+		if (username.empty() || iss.eof())
 		{
 			std::vector<std::string> errParams;
 			errParams.push_back("USER");
