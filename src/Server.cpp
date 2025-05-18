@@ -33,8 +33,6 @@ Server::Server(int _port, std::string &_password) : port(_port), password(_passw
 		pollfds.events = POLLIN;
 		clientfds.push_back(pollfds);
 
-		ircBot = new Bot("IRC_BOT", "BOT ");
-
 		std::cout << YELLOW << BOLD << "\n\t. . . Waiting for connections . . .\n"
 				  << RESET << std::endl;
 	}
@@ -46,7 +44,6 @@ Server::Server(int _port, std::string &_password) : port(_port), password(_passw
 
 void Server::runServer()
 {
-
 	try
 	{
 		while (g_running)
@@ -419,16 +416,7 @@ void Server::processCommand(std::string &command, int fd, size_t i)
 		}
 
 		else
-		{
-
-			if (ircBot->isBotCommand(command))
-			{
-				ircBot->processCommand(command, *client, fd);
-				return;
-			}
-
 			parse handl(command, this, *client);
-		}
 	}
 }
 
@@ -546,8 +534,8 @@ bool Server::isValidNickname(std::string &nickname) const
 		char c = nickname[i];
 
 		if (!(isalnum(c) || c == '-' || c == '_' || c == '[' || c == ']' || c == '\\' ||
-			c == '`' || c == '^' || c == '{' || c == '}' || c == '|'))
-				return false;
+			  c == '`' || c == '^' || c == '{' || c == '}' || c == '|'))
+			return false;
 	}
 	return true;
 }
@@ -562,6 +550,4 @@ Server::~Server()
 		close(sockfd);
 
 	clientfds.clear();
-
-	delete ircBot;
 };

@@ -19,7 +19,6 @@
 # include "Channel.hpp"
 # include "parse.hpp"
 # include "Client.hpp"
-# include "Bot.hpp"
 # include "repl.hpp"
 
 #define BACKLOG 1024
@@ -33,10 +32,10 @@ extern bool g_running;
 #define YELLOW "\033[33m"
 #define GREEN "\033[32m"
 #define CYAN "\033[36m"
+#define BLUE "\033[34m"
 
 class Client;
 class Channel;
-class Bot;
 
 class Server
 {
@@ -54,7 +53,6 @@ private:
 	int clientfd;
 	int pollStatus;
 	std::map<int, std::string> appendToBuffer;
-	Bot *ircBot;
 
 public:
 	std::vector<Client> clients;
@@ -62,7 +60,7 @@ public:
 	~Server();
 
 	void runServer(void);
-	void acceptNewConnection(void);
+	void acceptNewConnection();
 	bool receiveClientData(size_t i);
 	void disconnectClient(size_t i);
 	void processCommand(std::string &command, int fd, size_t i);

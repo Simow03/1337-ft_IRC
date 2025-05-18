@@ -43,6 +43,7 @@ public:
 	~Client();
 
 	int getFd(void) const;
+	void setFd(int fd);
 	std::string getNickName(void) const;
 	std::string getUserName(void) const;
 	std::string getIpAddress(void) const;

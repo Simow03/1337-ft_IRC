@@ -15,6 +15,11 @@ int Client::getFd(void) const
 	return fd;
 }
 
+void Client::setFd(int _fd)
+{
+	fd = _fd;
+}
+
 std::string Client::getNickName(void) const
 {
 	return nickname;

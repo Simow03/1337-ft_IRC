@@ -2,13 +2,14 @@
 
 bool g_running = true;
 
-void signalHandler(int signum) {
-	if (signum) {
-		g_running = false;
-	}
+void signalHandler(int signum)
+{
+	(void)signum;
+	g_running = false;
 }
 
-bool is_valid_port(std::string portStr) {
+bool is_valid_port(std::string portStr)
+{
 
 	if (portStr.empty())
 		return false;
@@ -16,7 +17,7 @@ bool is_valid_port(std::string portStr) {
 	for (size_t i = 0; i < portStr.length(); i++)
 		if (!isdigit(portStr[i]))
 			return false;
-	
+
 	std::stringstream ss;
 	int port;
 
@@ -29,26 +30,31 @@ bool is_valid_port(std::string portStr) {
 	return true;
 }
 
-bool password_invalid(std::string password) {
-	return (password.empty() || password.find(' ') != std::string::npos
-			|| password.find_first_not_of(" \t\n\r") == std::string::npos);
+bool password_invalid(std::string password)
+{
+	return (password.empty() || password.find(' ') != std::string::npos || password.find_first_not_of(" \t\n\r") == std::string::npos);
 }
 
-int main(int ac, char **av) {
+int main(int ac, char **av)
+{
 
-	if (ac != 3) {
-		std::cerr << RED <<  BOLD << UNDERLINE << "\nError :"
-				<< RESET <<" invalid input\n"
-				<< RED <<  BOLD << UNDERLINE << "\nUsage :"
-				<< RESET << "./ircserv <port> <password>\n" << std::endl;
+	if (ac != 3)
+	{
+		std::cerr << RED << BOLD << UNDERLINE << "\nError :"
+				  << RESET << " invalid input\n"
+				  << RED << BOLD << UNDERLINE << "\nUsage :"
+				  << RESET << "./ircserv <port> <password>\n"
+				  << std::endl;
 		return 1;
 	}
- 
-	if (!is_valid_port(av[1])) {
-		std::cerr << RED <<  BOLD << UNDERLINE << "\nError :"
-				<< RESET <<" invalid port\n"
-				<< RED <<  BOLD << UNDERLINE << "\nUsage :"
-				<< RESET << " Port should be between 1024 - 49151\n" << std::endl;
+
+	if (!is_valid_port(av[1]))
+	{
+		std::cerr << RED << BOLD << UNDERLINE << "\nError :"
+				  << RESET << " invalid port\n"
+				  << RED << BOLD << UNDERLINE << "\nUsage :"
+				  << RESET << " Port should be between 1024 - 49151\n"
+				  << std::endl;
 		return 1;
 	}
 
@@ -60,11 +66,13 @@ int main(int ac, char **av) {
 
 	std::string password = av[2];
 
-	if (password_invalid(password)) {
-		std::cerr << RED <<  BOLD << UNDERLINE << "\nError :"
-				<< RESET <<" invalid password\n"
-				<< RED <<  BOLD << UNDERLINE << "\nUsage :"
-				<< RESET << " Password should not be empty or contains a space.\n" << std::endl;
+	if (password_invalid(password))
+	{
+		std::cerr << RED << BOLD << UNDERLINE << "\nError :"
+				  << RESET << " invalid password\n"
+				  << RED << BOLD << UNDERLINE << "\nUsage :"
+				  << RESET << " Password should not be empty or contains a space.\n"
+				  << std::endl;
 		return 1;
 	}
 
@@ -77,7 +85,7 @@ int main(int ac, char **av) {
 	server.runServer();
 
 	std::cout << YELLOW << BOLD << "\n\t      Server has exited !      \n"
-				  << RESET << std::endl;
+			  << RESET << std::endl;
 
 	return 0;
 }
