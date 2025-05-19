@@ -258,7 +258,7 @@ void Server::processCommand(std::string &command, int fd, size_t i)
 		return;
 	}
 
-	if (cmd == "NICK")
+	if (cmd == "NICK" && !client->getIsAuthenticated())
 	{
 		std::string nickname;
 		iss >> nickname;
@@ -301,30 +301,11 @@ void Server::processCommand(std::string &command, int fd, size_t i)
 			return;
 		}
 
-		std::string oldNickname = clientFound ? client->getNickName() : "";
-
 		if (clientFound)
 		{
 			std::vector<std::string> params;
 
 			client->setNickName(nickname);
-
-			if (!oldNickname.empty())
-			{
-				std::string nickChangeMsg = ":" + oldNickname + "!" + client->getUserName() + "@" + client->getIpAddress() + " NICK :" + nickname + "\r\n";
-
-				std::vector<std::string> client_channels = get_channels(*client);
-				for (size_t i = 0; i < client_channels.size(); i++)
-				{
-					std::vector<Client *> members = get_clients_in_channel(client_channels[i]);
-					for (size_t i = 0; i < members.size(); ++i)
-					{
-						members[i]->sendMessage(nickChangeMsg);
-					}
-				}
-
-				send(fd, nickChangeMsg.c_str(), nickChangeMsg.size(), 0);
-			}
 
 			if (client->getHasPass() && !client->getNickName().empty() && !client->getUserName().empty() && !client->getIsAuthenticated())
 			{
