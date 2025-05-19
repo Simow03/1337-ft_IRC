@@ -67,6 +67,7 @@ public:
 	void sendIRCReply(int fd, const std::string &prefix, const std::string &command, const std::vector<std::string> &params);
 	void sendNumericReply(int fd, const std::string &numeric, const std::string &nickname, const std::vector<std::string> &params);
 	void sendWelcomeMessage(int fd, std::string nickname);
+	void shutDownServer(void);
 
 	void add_channel(std::string name);
 	int channel_exist(std::string channel_name);
