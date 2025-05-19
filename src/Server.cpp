@@ -42,18 +42,20 @@ Server::Server(int _port, std::string &_password) : port(_port), password(_passw
 	}
 };
 
-void Server::shutDownServer() {
+void Server::shutDownServer()
+{
 	std::cout << "\nSIGNIT RECEIVED ; SHUT DOWN SERVER" << std::endl;
 
-	std::vector<size_t>clientToDisconnect;
-	for (size_t i = 0; i < clientfds.size(); i++) {
+	std::vector<size_t> clientToDisconnect;
+	for (size_t i = 0; i < clientfds.size(); i++)
+	{
 		if (i > 0 || clientfds[i].fd != sockfd)
 			clientToDisconnect.push_back(i);
 	}
 
 	for (std::vector<size_t>::reverse_iterator it = clientToDisconnect.rbegin(); it != clientToDisconnect.rend(); ++it)
 		disconnectClient(*it);
-	
+
 	close(sockfd);
 	g_running = false;
 }
@@ -73,7 +75,8 @@ void Server::runServer()
 					shutDownServer();
 					return;
 				}
-				for (size_t i = 0; i < clientfds.size(); i++) {
+				for (size_t i = 0; i < clientfds.size(); i++)
+				{
 					if (i > 0 || clientfds[i].fd != sockfd)
 						disconnectClient(i);
 				}

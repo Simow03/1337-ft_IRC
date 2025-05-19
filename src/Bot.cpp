@@ -1,5 +1,12 @@
 #include "../inc/Bot.hpp"
 
+Bot::Bot(const std::string &ip, int port, const std::string &password,
+         const std::string &nick, const std::string &user)
+    : sockfd(-1), nickname(nick), username(user), server_ip(ip),
+      server_port(port), server_password(password), authenticated(false)
+{
+}
+
 void Bot::processMessage(const std::string &message)
 {
     size_t prefixEnd = message.find(' ');
@@ -156,18 +163,7 @@ std::string Bot::intToString(int num)
     ss << num;
     return ss.str();
 }
-Bot::Bot(const std::string &ip, int port, const std::string &password,
-         const std::string &nick, const std::string &user)
-    : sockfd(-1), nickname(nick), username(user), server_ip(ip),
-      server_port(port), server_password(password), authenticated(false)
-{
-}
 
-Bot::~Bot()
-{
-    if (sockfd != -1)
-        close(sockfd);
-}
 bool Bot::connect()
 {
     struct sockaddr_in server_addr;
@@ -183,13 +179,15 @@ bool Bot::connect()
     server_addr.sin_family = AF_INET;
     server_addr.sin_port = htons(server_port);
 
-    if (inet_pton(AF_INET, server_ip.c_str(), &server_addr.sin_addr) <= 0)
+    struct hostent *host = gethostbyname(server_ip.c_str());
+    if (host == NULL)
     {
-        std::cerr << RED << "Invalid address" << RESET << std::endl;
+        std::cerr << RED << "Invalid address: hostname resolution failed" << RESET << std::endl;
         close(sockfd);
         sockfd = -1;
         return false;
     }
+    memcpy(&server_addr.sin_addr, host->h_addr_list[0], host->h_length);
 
     if (::connect(sockfd, (struct sockaddr *)&server_addr, sizeof(server_addr)) < 0)
     {
@@ -265,4 +263,10 @@ void Bot::run()
 
     close(sockfd);
     sockfd = -1;
+}
+
+Bot::~Bot()
+{
+    if (sockfd != -1)
+        close(sockfd);
 }
